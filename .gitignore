@@ -1,20 +1,16 @@
-.DS_Store
-node_modules/
-dist/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-**/*.log
+######################################################################
+# Build Tools
 
-tests/**/coverage/
-tests/e2e/reports
-selenium-debug.log
+/unpackage/*
+/node_modules/*
 
-# Editor directories and files
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.local
+######################################################################
+# Development Tools
+
+/.idea/*
+/.vscode/*
+/.hbuilderx/*
+
+package-lock.json
+yarn.lock
 
