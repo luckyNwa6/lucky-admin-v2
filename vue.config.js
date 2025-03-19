@@ -128,3 +128,4 @@ module.exports = {
     })
   },
 }
+console.log("🚀 ~ module.exports.devServer.proxy.VUE_APP_BASE_API:", module.exports.devServer.proxy.VUE_APP_BASE_API)

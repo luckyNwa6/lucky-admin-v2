@@ -1,0 +1,47 @@
+name: 🐞 Bug 提交
+description: 提交错误报告.
+labels: ['bug', 'triage']
+assignees:
+  - CorentinTh
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您花时间填写此错误报告！
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 描述错误
+      description: 对错误内容的清晰简洁的描述，谢谢！
+      placeholder: 描述错误
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么?
+      description: 另外请告诉我们，您预计会发生什么?如果您有屏幕截图，可以将其粘贴到此处.
+      placeholder: bug截图
+    validations:
+      required: true
+
+  - type: textarea
+    id: version
+    attributes:
+      label: 系统信息
+      description: 您是什​​么环境?您可以使用该npx envinfo --system --browsers命令来获取此信息.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: app-type
+    attributes:
+      label: 您在哪里遇到该错误?
+      options:
+        - 博主网站
+        - 本地网站
+        - 其他 (docker, etc.)
+    validations:
+      required: true
