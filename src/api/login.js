@@ -6,16 +6,16 @@ export function login(username, password, code, uuid) {
     username,
     password,
     code,
-    uuid
+    uuid,
   }
   return request({
     url: '/login',
     headers: {
       isToken: false,
-      repeatSubmit: false
+      repeatSubmit: false,
     },
     method: 'post',
-    data: data
+    data: data,
   })
 }
 
@@ -24,10 +24,10 @@ export function register(data) {
   return request({
     url: '/register',
     headers: {
-      isToken: false
+      isToken: false,
     },
     method: 'post',
-    data: data
+    data: data,
   })
 }
 
@@ -35,7 +35,7 @@ export function register(data) {
 export function getInfo() {
   return request({
     url: '/getInfo',
-    method: 'get'
+    method: 'get',
   })
 }
 
@@ -43,7 +43,7 @@ export function getInfo() {
 export function logout() {
   return request({
     url: '/logout',
-    method: 'post'
+    method: 'post',
   })
 }
 
@@ -52,9 +52,47 @@ export function getCodeImg() {
   return request({
     url: '/captchaImage',
     headers: {
-      isToken: false
+      isToken: false,
     },
     method: 'get',
-    timeout: 20000
+    timeout: 20000,
+  })
+}
+
+export const reqLogin = (data) => {
+  return request({
+    url: '/sys/login',
+    method: 'post',
+    data,
+  })
+}
+
+export const getQQ = () => {
+  return request({
+    url: '/sys/getQQCode',
+    method: 'get',
+  })
+}
+export const getPersonInfo = () => {
+  return request({
+    url: '/sys/user/info',
+    method: 'get',
+    params: request.adornParams(),
+  })
+}
+
+export const sendEmailCode = (email) => {
+  return request({
+    url: '/sys/sendEmailCode',
+    method: 'post',
+    data: { email },
+  })
+}
+
+export const emailLogin = (data) => {
+  return request({
+    url: '/sys/emailLogin',
+    method: 'post',
+    data,
   })
 }
