@@ -88,7 +88,7 @@ export default {
         remember: false,
       },
       form2: {
-        email: '',
+        email: '1656213092@qq.com',
         emailCode: '',
       },
       rules: {
@@ -304,9 +304,9 @@ export default {
     //获取qq的跳转链接到第三方页面扫描登录
     goQQ() {
       getQQ().then((res) => {
-        // console.log('🚀 ~ getQQ ~ res:', res)
+        console.log('🚀 ~ getQQ ~ res:', res)
         // console.log('请求新的URL去验证第三方的QQ！！！')
-        window.location.href = res.data
+        // window.location.href = res.data
       })
     },
 

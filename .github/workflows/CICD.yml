@@ -3,7 +3,7 @@ name: 云服务器CICD
 on:
   push:
     branches:
-      - main
+      - main-stop
 
 jobs:
   build-and-deploy:

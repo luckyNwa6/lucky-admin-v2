@@ -69,7 +69,7 @@ export const reqLogin = (data) => {
 
 export const getQQ = () => {
   return request({
-    url: '/sys/getQQCode',
+    url: '/thirdLogin/getQQCode',
     method: 'get',
   })
 }
@@ -83,7 +83,7 @@ export const getPersonInfo = () => {
 
 export const sendEmailCode = (email) => {
   return request({
-    url: '/sys/sendEmailCode',
+    url: '/thirdLogin/sendEmailCode',
     method: 'post',
     data: { email },
   })
