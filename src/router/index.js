@@ -182,7 +182,7 @@ Router.prototype.replace = function push(location) {
 }
 
 export default new Router({
-  mode: 'history', // 去掉url中的#  用这个需要配publicPath的地址
+  mode: 'history', // 去掉url中的#  用这个需要改nginx配置即可
   // mode: 'hash', // hash模式
   scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes,
