@@ -19,6 +19,19 @@ export function login(username, password, code, uuid) {
   })
 }
 
+// 第三方平台登录
+export function socialLogin(source, code, state) {
+  const data = {
+    code,
+    state,
+  }
+  return request({
+    url: '/system/auth/social-login/' + source,
+    method: 'get',
+    params: data,
+  })
+}
+
 // 注册方法
 export function register(data) {
   return request({
