@@ -30,7 +30,6 @@ export default {
         source: this.source,
       })
       .then(() => {
-        console.log('1111111111111111')
         loadingInstance.close()
         this.$router.push({ path: this.redirect || '/' }).catch(() => {})
       })

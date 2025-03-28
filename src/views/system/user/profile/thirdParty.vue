@@ -46,7 +46,7 @@
           <span class="app-name">WeiXin</span></a
         > -->
 
-        <a class="third-app" href="#" title="功能开发中..." @click="authUrl('qq')">
+        <a class="third-app" href="#" @click="goQQ()">
           <div class="git-other-login-icon">
             <svg-icon icon-class="qq" />
           </div>
@@ -59,7 +59,7 @@
 
 <script>
 import { authUnlock, authBinding } from '@/api/system/auth'
-
+import { getQQ } from '@/api/login'
 export default {
   props: {
     auths: {
@@ -86,6 +86,15 @@ export default {
     authUrl(source) {
       authBinding(source).then((res) => {
         top.location.href = res.msg
+      })
+    },
+    goQQ() {
+      getQQ().then((res) => {
+        console.log('🚀 ~ getQQ ~ res:', res)
+        // console.log('请求新的URL去验证第三方的QQ！！！')
+        // window.location.href = res.data
+        this.$router.push('/social-login')
+        top.location.href = res.data
       })
     },
   },
