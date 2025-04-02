@@ -1,4 +1,4 @@
-import { login, socialLogin, logout, getInfo } from '@/api/login'
+import { login, socialLogin, logout, getInfo, emailLogin } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 
 const user = {
@@ -51,7 +51,20 @@ const user = {
           })
       })
     },
-
+    //邮箱登录
+    EmailLogin({ commit }, emailInfo) {
+      return new Promise((resolve, reject) => {
+        emailLogin(emailInfo)
+          .then((res) => {
+            setToken(res.token)
+            commit('SET_TOKEN', res.token)
+            resolve()
+          })
+          .catch((error) => {
+            reject(error)
+          })
+      })
+    },
     // 第三方平台登录
     SocialLogin({ commit }, userInfo) {
       const code = userInfo.code
@@ -78,7 +91,7 @@ const user = {
             const user = res.user
             const avatar =
               user.avatar == '' || user.avatar == null
-                ? require('@/assets/images/profile.jpg')
+                ? require('@/assets/images/avatar.gif')
                 : process.env.NODE_ENV === 'production'
                 ? process.env.VUE_APP_BASE_API + user.avatar
                 : process.env.VUE_APP_IMG_API + user.avatar

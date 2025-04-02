@@ -104,7 +104,7 @@ export const sendEmailCode = (email) => {
 
 export const emailLogin = (data) => {
   return request({
-    url: '/sys/emailLogin',
+    url: '/thirdLogin/emailLogin',
     method: 'post',
     data,
   })

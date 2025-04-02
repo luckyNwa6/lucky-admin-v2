@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import { getQQ, reqLogin, sendEmailCode, emailLogin } from '@/api/login'
+import { getQQ, reqLogin, sendEmailCode } from '@/api/login'
 import { getCodeImg } from '@/api/login'
 import Cookies from 'js-cookie'
 import { encrypt, decrypt } from '@/utils/jsencrypt'
@@ -89,13 +89,13 @@ export default {
       phone: '',
       smsCode: '',
       loginForm: {
-        username: '',
-        password: '',
+        username: 'admin',
+        password: 'Nwa741',
         rememberMe: false,
         uuid: '',
       },
       form2: {
-        email: '',
+        email: '1656213092@qq.com',
         emailCode: '',
       },
       rules: {
@@ -130,9 +130,9 @@ export default {
             trigger: 'blur',
           },
           {
-            min: 6,
-            max: 9,
-            message: '验证码长度必须为 6-9 位',
+            min: 5,
+            max: 8,
+            message: '验证码长度必须为 5-8 位',
             trigger: 'blur',
           },
         ],
@@ -154,36 +154,23 @@ export default {
       this.$refs.loginForm2.validate((valid) => {
         if (valid) {
           this.emailLoading = true
-          // this.handleEmailLogin()
+          this.handleEmailLogin()
         } else {
           return false
         }
       })
     },
     //邮箱登录--处理数据
-    // handleEmailLogin() {
-    //   let data = {
-    //     email: this.form2.email,
-    //     emailCode: this.form2.emailCode,
-    //   }
-    //   // emailLogin(data).then(res => {
-    //   //   console.log('🚀 ~ reqLogin ~ res:', res)
-    //   //   //session会话级，关闭浏览器，token就没了，1登录，开2窗口
-    //   //   //会出现还需要登录的情况
-    //   //   // sessionStorage.setItem("token", res.luckyToken);
-    //   //   //cookie，浏览器关闭也能保持登录状态
-    //   //   if (res.data.code === 200) {
-    //   //     // console.log('🚀 ~ reqLogin ~ res:', res)
-    //   //     this.$cookie.set('token', res.data.token)
-    //   //     this.successMsg(res.data.msg)
-    //   //     this.$router.replace({ name: 'home' })
-    //   //   } else {
-    //   //     this.failMsg(res.data.msg)
-    //   //     this.$router.push({ name: 'login' })
-    //   //   }
-    //   //   this.emailLoading = false
-    //   // })
-    // },
+    handleEmailLogin() {
+      this.$store
+        .dispatch('EmailLogin', this.form2)
+        .then(() => {
+          this.$router.push({ path: this.redirect || '/' }).catch(() => {})
+        })
+        .catch(() => {
+          this.emailLoading = false
+        })
+    },
     // 获取验证码处理
     async handleGetCode() {
       try {
@@ -195,13 +182,13 @@ export default {
         // 开始倒计时
         this.startCountdown()
         // 调用获取验证码接口
-        // sendEmailCode(this.form2.email).then(res => {
-        //   if (res.data.code === 200) {
-        //     this.$message.success('验证码已发送，请注意查收')
-        //   } else {
-        //     this.$modal.msgError(res.data.msg)
-        //   }
-        // })
+        sendEmailCode(this.form2.email).then((res) => {
+          if (res.data.code === 200) {
+            this.$message.success('验证码已发送，请注意查收')
+          } else {
+            this.$modal.msgError(res.data.msg)
+          }
+        })
       } catch (error) {
         if (error) {
           this.$message.error(error.message || '验证码发送失败')
