@@ -57,8 +57,18 @@
         <!-- 这里可以添加图标按钮 -->
       </div>
 
-      <div @click="goQQ" class="qqClass">
+      <!-- <div @click="doSocialLogin('qq')" class="qqClass">
         <el-image :src="require('@/assets/images/qq_one.png')" fit="contain"></el-image>
+      </div> -->
+      <div class="oauth-login" style="display: flex; justify-content: center">
+        <div class="oauth-login-item" @click="doSocialLogin('qq')">
+          <svg-icon icon-class="qq1" style="height: 1.2em" />
+          <!-- <span>QQ</span> -->
+        </div>
+        <div class="oauth-login-item" @click="doSocialLogin('gitee')">
+          <svg-icon icon-class="gitee" style="height: 1.2em" />
+          <!-- <span>Gitee</span> -->
+        </div>
       </div>
     </div>
     <div class="copyright">
@@ -76,8 +86,9 @@
 </template>
 
 <script>
-import { getQQ, reqLogin, sendEmailCode } from '@/api/login'
+import { getQQ, sendEmailCode } from '@/api/login'
 import { getCodeImg } from '@/api/login'
+import { authBinding } from '@/api/system/auth'
 import Cookies from 'js-cookie'
 import { encrypt, decrypt } from '@/utils/jsencrypt'
 
@@ -252,14 +263,20 @@ export default {
     },
 
     //获取qq的跳转链接到第三方页面扫描登录
-    goQQ() {
-      getQQ().then((res) => {
-        console.log('🚀 ~ getQQ ~ res:', res)
-        // console.log('请求新的URL去验证第三方的QQ！！！')
-        // window.location.href = res.data
-        this.$router.push('/social-login')
-        top.location.href = res.data
-      })
+    doSocialLogin(source) {
+      if (source === 'qq') {
+        getQQ().then((res) => {
+          console.log('🚀 ~ getQQ ~ res:', res)
+          // console.log('请求新的URL去验证第三方的QQ！！！')
+          // window.location.href = res.data
+          this.$router.push('/social-login')
+          top.location.href = res.data
+        })
+      } else {
+        authBinding(source).then((res) => {
+          top.location.href = res.msg
+        })
+      }
     },
 
     //记住密码功能
@@ -428,6 +445,20 @@ export default {
   height: 47px !important;
   line-height: 47px;
   font-weight: 600;
+}
+
+.oauth-login-item {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+.oauth-login-item img {
+  height: 45px;
+  width: 45px;
+}
+.oauth-login-item span:hover {
+  text-decoration: underline red;
+  color: red;
 }
 
 /* 对于移动设备进行调整 */
