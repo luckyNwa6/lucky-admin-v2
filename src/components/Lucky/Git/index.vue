@@ -9,13 +9,13 @@ export default {
   name: 'RuoYiGit',
   data() {
     return {
-      url: 'https://gitee.com/y_project/RuoYi-Vue'
+      url: 'https://github.com/luckyNwa6',
     }
   },
   methods: {
     goto() {
       window.open(this.url)
-    }
-  }
+    },
+  },
 }
 </script>
