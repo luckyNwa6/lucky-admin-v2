@@ -57,11 +57,14 @@
         <!-- 这里可以添加图标按钮 -->
       </div>
       <div class="oauth">
-        <div @click="doSocialLogin('qq')" class="oauth-login">
+        <div @click="doSocialLogin('qq')" class="oauth-login" style="width: 27px; height: 27px">
           <el-image :src="require('@/assets/images/qq.png')" fit="contain"></el-image>
         </div>
-        <div @click="doSocialLogin('gitee')" class="oauth-login" style="margin: 4px 0 0 18px">
+        <div @click="doSocialLogin('gitee')" class="oauth-login" style="margin: 2px 0 0 18px">
           <el-image :src="require('@/assets/images/gitee.png')" fit="contain"></el-image>
+        </div>
+        <div @click="doSocialLogin('github')" class="oauth-login" style="margin: 2px 0 0 14px">
+          <el-image :src="require('@/assets/images/github.png')" fit="contain"></el-image>
         </div>
       </div>
     </div>

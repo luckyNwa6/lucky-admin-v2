@@ -27,17 +27,12 @@
           <span class="app-name">Gitee</span>
         </a>
 
-        <!-- <a
-          class="third-app"
-          href="#"
-          @click="authUrl('github');"
-          title="使用 GitHub 账号授权登录"
-        >
+        <a class="third-app" href="#" @click="authUrl('github')" title="使用 GitHub 账号授权登录">
           <div class="git-other-login-icon">
             <svg-icon icon-class="github" />
           </div>
-          <span class="app-name">Github</span></a
-        > -->
+          <span class="app-name">Github</span>
+        </a>
 
         <!-- <a class="third-app" href="#" title="功能开发中...">
           <div class="git-other-login-icon">
@@ -46,7 +41,7 @@
           <span class="app-name">WeiXin</span></a
         > -->
 
-        <a class="third-app" href="#" @click="goQQ()">
+        <a class="third-app" href="#" @click="authUrl('qq')">
           <div class="git-other-login-icon">
             <svg-icon icon-class="qq" />
           </div>
@@ -59,7 +54,7 @@
 
 <script>
 import { authUnlock, authBinding } from '@/api/system/auth'
-import { getQQ } from '@/api/login'
+
 export default {
   props: {
     auths: {
@@ -86,15 +81,6 @@ export default {
     authUrl(source) {
       authBinding(source).then((res) => {
         top.location.href = res.msg
-      })
-    },
-    goQQ() {
-      getQQ().then((res) => {
-        console.log('🚀 ~ getQQ ~ res:', res)
-        // console.log('请求新的URL去验证第三方的QQ！！！')
-        // window.location.href = res.data
-        this.$router.push('/social-login')
-        top.location.href = res.data
       })
     },
   },
