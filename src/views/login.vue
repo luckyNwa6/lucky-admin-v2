@@ -38,9 +38,9 @@
           <el-input v-model="form2.email" prefix-icon="el-icon-message" placeholder="请输入邮箱" clearable />
         </el-form-item>
 
-        <el-form-item label="验证码" prop="emailCode" style="margin-bottom: 61px">
+        <el-form-item label="验证码" prop="emailCode" style="margin-bottom: 63px">
           <div class="sms-code">
-            <el-input v-model="form2.emailCode" prefix-icon="el-icon-lock" clearable placeholder="请输入验证码">
+            <el-input v-model="form2.emailCode" prefix-icon="el-icon-s-promotion" clearable placeholder="请输入验证码">
               <el-button :loading="emailCodeLoading" slot="append" :disabled="isCounting" @click="handleGetCode">
                 {{ countdown > 0 ? `重新获取(${countdown}s)` : '获取验证码' }}
               </el-button>
@@ -56,18 +56,12 @@
         <el-divider>选择其他登录方式</el-divider>
         <!-- 这里可以添加图标按钮 -->
       </div>
-
-      <!-- <div @click="doSocialLogin('qq')" class="qqClass">
-        <el-image :src="require('@/assets/images/qq_one.png')" fit="contain"></el-image>
-      </div> -->
-      <div class="oauth-login" style="display: flex; justify-content: center">
-        <div class="oauth-login-item" @click="doSocialLogin('qq')">
-          <svg-icon icon-class="qq1" style="height: 1.2em" />
-          <!-- <span>QQ</span> -->
+      <div class="oauth">
+        <div @click="doSocialLogin('qq')" class="oauth-login">
+          <el-image :src="require('@/assets/images/qq.png')" fit="contain"></el-image>
         </div>
-        <div class="oauth-login-item" @click="doSocialLogin('gitee')">
-          <svg-icon icon-class="gitee" style="height: 1.2em" />
-          <!-- <span>Gitee</span> -->
+        <div @click="doSocialLogin('gitee')" class="oauth-login" style="margin: 4px 0 0 18px">
+          <el-image :src="require('@/assets/images/gitee.png')" fit="contain"></el-image>
         </div>
       </div>
     </div>
@@ -153,7 +147,6 @@ export default {
       loading: false, //登录防重复点击
       emailLoading: false,
       emailCodeLoading: false,
-
       captchaEnabled: false, //验证码开关
       redirect: undefined,
     }
@@ -264,32 +257,10 @@ export default {
 
     //获取qq的跳转链接到第三方页面扫描登录
     doSocialLogin(source) {
-      if (source === 'qq') {
-        getQQ().then((res) => {
-          console.log('🚀 ~ getQQ ~ res:', res)
-          // console.log('请求新的URL去验证第三方的QQ！！！')
-          // window.location.href = res.data
-          this.$router.push('/social-login')
-          top.location.href = res.data
-        })
-      } else {
-        authBinding(source).then((res) => {
-          top.location.href = res.msg
-        })
-      }
+      authBinding(source).then((res) => {
+        top.location.href = res.msg
+      })
     },
-
-    //记住密码功能
-    // loadStoredCredentials() {
-    //   // 从 localStorage 中读取账号和密码
-    //   const username = this.$cookie.get('username')
-    //   const password = this.$cookie.get('password')
-    //   if (username && password) {
-    //     this.form.username = username
-    //     this.form.password = password
-    //     this.remember = true // 自动勾选记住密码
-    //   }
-    // },
 
     //头部标签切换   看看哪些数据切换要重置
     tabCheck(type) {
@@ -322,35 +293,9 @@ export default {
     },
   },
   //生命周期----------------------------------------------------------------------------------------------
-
   created() {
     this.getCode()
     this.getCookie()
-  },
-  async beforeMount() {
-    //获取是否开启验证码
-    // this.yzm.yzmOpen = await this.getSysConfig('openYzm').catch(() => {})
-  },
-  mounted() {
-    // window.addEventListener('keydown', this.keyDown)
-    // // this.loadCaptchaScripts() //jq慢加载导致这个js里读取不到jq报错，才将js单独拉出来引入
-    // this.loadStoredCredentials() //记住密码
-    // // 获取完整的查询字符串，例如："?data=42514014FF964FE30D2B24E69E3CA6DB"
-    // let queryString = window.location.href.split('?')[1]
-    // // console.log('url?后面的值是:' + queryString)
-    // // 解析查询字符串为对象
-    // let token = new URLSearchParams(queryString).get('data')
-    // let queryString2 = window.location.href.split('&')[1]
-    // let openId = new URLSearchParams(queryString2).get('openid')
-    // // console.log('🚀 ~ mounted ~ openId:', openId)
-    // if (token !== '' && token !== null && openId !== '' && openId !== null) {
-    //   this.$cookie.set('token', token)
-    //   console.log('开始获取个人信息！')
-    //   this.$router.replace({ name: 'home' })
-    // }
-  },
-  destroyed() {
-    // window.removeEventListener('keydown', this.keyDown, false) // 销毁事件
   },
   watch: {
     $route: {
@@ -418,12 +363,7 @@ export default {
 .other-login {
   padding: 20px 40px 20px;
 }
-.qqClass {
-  width: 45px;
-  height: 45px;
-  text-align: center;
-  margin: 0 auto;
-}
+
 .copyright {
   color: #999;
   font-size: 10px;
@@ -446,19 +386,14 @@ export default {
   line-height: 47px;
   font-weight: 600;
 }
-
-.oauth-login-item {
+.oauth {
   display: flex;
-  align-items: center;
-  margin-right: 10px;
-}
-.oauth-login-item img {
-  height: 45px;
-  width: 45px;
-}
-.oauth-login-item span:hover {
-  text-decoration: underline red;
-  color: red;
+  justify-content: center;
+  .oauth-login {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+  }
 }
 
 /* 对于移动设备进行调整 */
@@ -529,13 +464,6 @@ export default {
     color: rgb(243, 227, 227);
     background-color: transparent;
   }
-
-  .qqClass {
-    width: 45px;
-    height: 45px;
-    margin: 10px auto;
-  }
-
   .copyright {
     color: #999;
     font-size: 7px;

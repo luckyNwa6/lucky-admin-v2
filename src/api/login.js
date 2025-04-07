@@ -72,28 +72,6 @@ export function getCodeImg() {
   })
 }
 
-export const reqLogin = (data) => {
-  return request({
-    url: '/sys/login',
-    method: 'post',
-    data,
-  })
-}
-
-export const getQQ = () => {
-  return request({
-    url: '/thirdLogin/getQQCode',
-    method: 'get',
-  })
-}
-export const getPersonInfo = () => {
-  return request({
-    url: '/sys/user/info',
-    method: 'get',
-    params: request.adornParams(),
-  })
-}
-
 export const sendEmailCode = (email) => {
   return request({
     url: '/thirdLogin/sendEmailCode',
