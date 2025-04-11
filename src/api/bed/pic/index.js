@@ -38,3 +38,17 @@ export function uploadPic(data) {
     },
   })
 }
+
+export function syncYunFolderL() {
+  return request({
+    url: '/bedFolder/syncYunFolder',
+    method: 'get',
+  })
+}
+
+export function syncYunPicL() {
+  return request({
+    url: '/bedPic/syncYunPic',
+    method: 'get',
+  })
+}

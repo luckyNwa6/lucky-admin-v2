@@ -6,13 +6,13 @@
       style="width: 222px; margin-right: 12px; margin-bottom: 12px"
       clearable
     ></el-input>
-    <el-select v-model="selectedValue" placeholder="请选择文件夹" style="margin-right: 10px">
+    <el-select v-model="selectedValue" placeholder="请选择文件夹" clearable style="margin-right: 10px">
       <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
     </el-select>
     <el-button type="primary" icon="el-icon-search" @click="searchPic">搜索</el-button>
     <el-button type="danger" @click="delOssPic" :disabled="dataListSelections.length <= 0">批量删除</el-button>
     <el-button type="primary" @click="uploadHandle()">上传文件</el-button>
-
+    <el-button type="primary" @click="syncYun()" :disabled="btnYunDis">同步文件夹和图片</el-button>
     <el-table :data="dataList" style="width: 100%" v-loading="dataListLoading" border @selection-change="handleSelectionChange">
       <el-table-column header-align="center" align="center" type="selection" width="55"></el-table-column>
       <el-table-column header-align="center" align="center" prop="id" label="id" width="100"></el-table-column>
@@ -64,8 +64,8 @@
 </template>
 
 <script>
-// import { getFolderList } from '@/api/bed/folder/index'
-import { getYunList, delRemotePic, modifyInfo } from '@/api/bed/pic/index'
+import { getFolderList } from '@/api/bed/folder/index'
+import { getYunList, delRemotePic, modifyInfo, syncYunFolderL, syncYunPicL } from '@/api/bed/pic/index'
 import Upload from './pic-upload'
 
 export default {
@@ -81,10 +81,11 @@ export default {
       showFileList: false, //隐藏上传的文件列表
       dataListSelections: [], //用来存放多选的对象
       findContent: '', //搜索框内容
-      uploadVisible: true, //上传弹框
+      uploadVisible: false, //上传弹框
       dialogVisible: false, // 控制弹框显示与隐藏
       picName: '', // 输入框1的值
       tempId: 0, //用来存id修改时候用到
+      btnYunDis: false,
     }
   },
   components: {
@@ -130,16 +131,16 @@ export default {
     getYunListF() {
       this.dataListLoading = true
       let params = {
-        picName: this.findContent || null,
+        picName: this.findContent || '',
         folder: this.selectedValue,
         page: 1,
         limit: 100,
       }
       getYunList(params).then((res) => {
         // console.log('🚀 ~ getYunList ~ res:', res)
-        if (res.data.code === 200) {
-          this.dataList = res.data.data.list
-          this.totalPage = res.data.data.totalCount
+        if (res.code === 200) {
+          this.dataList = res.rows
+          this.totalPage = res.total
         } else {
           this.dataList = []
           this.totalPage = 0
@@ -196,26 +197,64 @@ export default {
       this.pageIndex = val
       this.getYunListF()
     },
+
+    //同步云
+    syncYun() {
+      this.syncYunFolder()
+    },
+    //同步文件夹
+    syncYunFolder() {
+      this.btnYunDis = true
+      syncYunFolderL()
+        .then((res) => {
+          console.log('🚀 ~ syncYunFolderL ~ res:', res)
+          if (res.code === 200) {
+            this.$message.success(res.data)
+            this.syncYunPic() //同步完文件夹再去同步图片
+          } else {
+            this.$message.error(res.data)
+          }
+        })
+        .catch(() => {
+          this.btnYunDis = false
+        })
+    },
+    //同步图片
+    syncYunPic() {
+      syncYunPicL()
+        .then((res) => {
+          if (res.code === 200) {
+            this.$message.success(res.data)
+          } else {
+            this.$message.error(res.data)
+          }
+          this.btnYunDis = false
+        })
+        .catch(() => {
+          this.btnYunDis = false
+        })
+    },
   },
 
   created() {
     //获取文件夹列表,处理成下拉框数据
-    // getFolderList({
-    //   folderName: '',
-    //   type: 'noTree',
-    //   userId: this.userInfo.userId,
-    // }).then(({ data }) => {
-    //   if (data && data.code === 200) {
-    //     this.options = data.data.map(folder => ({
-    //       value: folder.folderName,
-    //       label: folder.folderName,
-    //     }))
-    //     this.selectedValue = this.options[0].value // 将第一个选项的值赋给 selectedValue
-    //     this.getYunListF()
-    //   } else {
-    //     this.$message.error(data.msg)
-    //   }
-    // })
+    getFolderList({
+      folderName: '',
+      type: 'noTree',
+      userId: '1',
+    }).then((res) => {
+      console.log('🚀 ~ created ~ res:', res)
+      if (res.code === 200) {
+        this.options = res.data.map((folder) => ({
+          value: folder.id,
+          label: folder.folderName,
+        }))
+        this.selectedValue = this.options[0].value // 将第一个选项的值赋给 selectedValue
+        this.getYunListF()
+      } else {
+        this.$message.error(res.msg)
+      }
+    })
   },
 }
 </script>
