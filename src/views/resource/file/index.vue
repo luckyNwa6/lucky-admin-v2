@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="app-container">
     <el-input
       v-model="findContent"
       placeholder="请输入标题关键字"
@@ -36,16 +36,7 @@
       </el-table-column>
     </el-table>
 
-    <el-pagination
-      @size-change="sizeChangeHandle"
-      @current-change="currentChangeHandle"
-      :current-page="pageIndex"
-      :page-sizes="[10, 20, 50, 100]"
-      :page-size="pageSize"
-      :total="totalPage"
-      layout="total, sizes, prev, pager, next, jumper"
-    ></el-pagination>
-
+    <pagination v-show="totalPage > 0" :total="totalPage" :page.sync="pageIndex" :limit.sync="pageSize" @pagination="getYunListF" />
     <!-- 弹框组件 -->
     <el-dialog :visible.sync="dialogVisible" title="修改名称">
       <el-form label-width="80px">
