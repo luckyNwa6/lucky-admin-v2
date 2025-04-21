@@ -132,9 +132,9 @@ export default {
     },
     startPolling() {
       // 每隔一定时间执行轮询任务
-      this.intervalId = setInterval(() => {
-        this.poll()
-      }, 5000) // 5秒钟轮询一次，根据需要调整间隔时间
+      // this.intervalId = setInterval(() => {
+      //   this.poll()
+      // }, 5000) // 5秒钟轮询一次，根据需要调整间隔时间
     },
     stopPolling() {
       // 清除定时器，停止轮询任务    ！！！！重要，防止内存泄露
