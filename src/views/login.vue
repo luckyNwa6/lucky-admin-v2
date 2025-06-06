@@ -53,7 +53,7 @@
       <div id="captcha-div" class="yzmStyle"></div>
       <!-- 其他登录方式 -->
       <div class="other-login">
-        <el-divider>选择其他登录方式</el-divider>
+        <el-divider style="background: pink">选择其他登录方式</el-divider>
         <!-- 这里可以添加图标按钮 -->
       </div>
       <div class="oauth">
@@ -319,7 +319,12 @@ export default {
   display: flex;
   justify-content: flex-end; /* 将子元素对齐到右侧 */
   background-image: url(../assets/images/login_lucky.jpg);
-  background-size: 100% 100%;
+  // background-size: 100% 100%;
+  // background-size: cover; /* 关键修改：保持宽高比覆盖整个容器 */
+  // background-position: center; /* 确保图片居中 */
+
+  background-size: 100% auto; /* 宽度100%，高度自动 */
+  overflow: hidden; /* 隐藏可能溢出的部分 */
 }
 
 .login-card {
@@ -364,9 +369,14 @@ export default {
 }
 
 .other-login {
+  font-size: 12px;
   padding: 20px 40px 20px;
 }
 
+::v-deep .other-login .el-divider__text {
+  font-size: 12px;
+  // background-color: transparent !important;
+}
 .copyright {
   color: #999;
   font-size: 10px;
