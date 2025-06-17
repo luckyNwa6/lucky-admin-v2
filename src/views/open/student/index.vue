@@ -33,6 +33,7 @@
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button icon="el-icon-download" size="mini" @click="docxLoad">下载DOCX替换文档</el-button>
       </el-form-item>
     </el-form>
 
@@ -151,8 +152,8 @@
 </template>
 
 <script>
-import { listStudent, getStudent, delStudent, addStudent, updateStudent, exportStudent } from '@/api/open/student'
-
+import { downLoadDocx, listStudent, getStudent, delStudent, addStudent, updateStudent, exportStudent } from '@/api/open/student'
+import { base64ToFile } from '@/utils/ruoyi.js'
 export default {
   name: 'Student',
   components: {},
@@ -197,6 +198,13 @@ export default {
     this.getList()
   },
   methods: {
+    docxLoad() {
+      downLoadDocx().then((res) => {
+        console.log('🚀 ~ downLoadDocx ~ res:', res)
+        let fileName = `小维文档_${new Date().getTime()}.docx`
+        base64ToFile(res.data, fileName)
+      })
+    },
     /** 查询学生信息列表 */
     getList() {
       this.loading = true
