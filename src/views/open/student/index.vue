@@ -33,7 +33,9 @@
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-        <el-button icon="el-icon-download" size="mini" @click="docxLoad">下载DOCX替换文档</el-button>
+        <el-button icon="el-icon-download" size="mini" @click="loadDocx">下载DOCX替换文档</el-button>
+        <el-button icon="el-icon-download" size="mini" @click="loadExcel">下载EXCEL</el-button>
+        <el-button icon="el-icon-download" size="mini" @click="testTime">测试按钮</el-button>
       </el-form-item>
     </el-form>
 
@@ -152,7 +154,10 @@
 </template>
 
 <script>
-import { downLoadDocx, listStudent, getStudent, delStudent, addStudent, updateStudent, exportStudent } from '@/api/open/student'
+import { listStudent, getStudent, delStudent, addStudent, updateStudent, exportStudent } from '@/api/open/student'
+
+import { downLoadDocx, downloadExcel } from '@/api/open/poi'
+
 import { base64ToFile } from '@/utils/ruoyi.js'
 export default {
   name: 'Student',
@@ -198,11 +203,23 @@ export default {
     this.getList()
   },
   methods: {
-    docxLoad() {
+    testTime() {
+      let time = this.parseTime(new Date(), '{y}-{m}-{d}-{h}-{i}-{s}')
+      console.log('🚀 ~ testTime ~ time:', time)
+    },
+    loadDocx() {
       downLoadDocx().then((res) => {
         console.log('🚀 ~ downLoadDocx ~ res:', res)
-        let fileName = `小维文档_${new Date().getTime()}.docx`
+        let fileName = `小维word文档_${this.parseTime(new Date(), '{y}-{m}-{d}-{h}-{i}-{s}')}.docx`
         base64ToFile(res.data, fileName)
+      })
+    },
+
+    loadExcel() {
+      downloadExcel().then((res) => {
+        console.log('🚀 ~ downloadExcel ~ res:', res)
+        let fileName = `小维excel文档_${this.parseTime(new Date(), '{y}-{m}-{d}-{h}-{i}-{s}')}.xlsx`
+        base64ToFile(res.data.data, fileName)
       })
     },
     /** 查询学生信息列表 */

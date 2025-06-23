@@ -51,11 +51,3 @@ export function exportStudent(query) {
     params: query,
   })
 }
-
-export function downLoadDocx(data) {
-  return request({
-    url: '/openApi/download',
-    method: 'post',
-    data,
-  })
-}
