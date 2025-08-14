@@ -12,12 +12,12 @@
       </el-form-item>
       <el-form-item label="性别" prop="studentSex">
         <el-select v-model="queryParams.studentSex" placeholder="请选择性别" clearable size="small">
-          <el-option label="请选择字典生成" value="" />
+          <el-option v-for="dict in dict.type.sys_user_sex" :key="dict.value" :label="dict.label" :value="dict.value"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="状态" prop="studentStatus">
-        <el-select v-model="queryParams.studentStatus" placeholder="请选择状态" clearable size="small">
-          <el-option label="请选择字典生成" value="" />
+        <el-select v-model="form.studentStatus" placeholder="请选择状态" clearable size="small">
+          <el-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :label="dict.label" :value="dict.value"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="生日" prop="studentBirthday">
@@ -85,8 +85,16 @@
       <el-table-column label="学生名称" align="center" prop="studentName" />
       <el-table-column label="年龄" align="center" prop="studentAge" />
       <el-table-column label="爱好" align="center" prop="studentHobby" />
-      <el-table-column label="性别" align="center" prop="studentSex" />
-      <el-table-column label="状态" align="center" prop="studentStatus" />
+      <el-table-column label="性别" align="center" prop="studentSex">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.sys_user_sex" :value="scope.row.studentSex" />
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" align="center" prop="studentStatus">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.sys_normal_disable" :value="scope.row.studentStatus" />
+        </template>
+      </el-table-column>
       <el-table-column label="生日" align="center" prop="studentBirthday" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.studentBirthday, '{y}-{m}-{d}') }}</span>
@@ -125,14 +133,14 @@
           <el-input v-model="form.studentHobby" placeholder="请输入爱好" />
         </el-form-item>
         <el-form-item label="性别" prop="studentSex">
-          <el-select v-model="form.studentSex" placeholder="请选择性别">
-            <el-option label="请选择字典生成" value="" />
+          <el-select v-model="form.studentSex" placeholder="请选择性别" clearable size="small">
+            <el-option v-for="dict in dict.type.sys_user_sex" :key="dict.value" :label="dict.label" :value="dict.value"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.studentStatus">
-            <el-radio label="1">请选择字典生成</el-radio>
-          </el-radio-group>
+        <el-form-item label="状态" prop="studentStatus">
+          <el-select v-model="form.studentStatus" placeholder="请选择状态" clearable size="small">
+            <el-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :label="dict.label" :value="dict.value"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="生日" prop="studentBirthday">
           <el-date-picker
@@ -161,6 +169,7 @@ import { downLoadDocx, downloadExcel } from '@/api/open/poi'
 import { base64ToFile } from '@/utils/ruoyi.js'
 export default {
   name: 'Student',
+  dicts: ['sys_normal_disable', 'sys_user_sex'],
   components: {},
   data() {
     return {
