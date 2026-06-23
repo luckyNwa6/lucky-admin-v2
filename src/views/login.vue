@@ -1,81 +1,146 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <!-- 登录方式切换 -->
+      <div class="brand-section">
+        <div class="brand-logo">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="30" fill="url(#gradient)"/>
+            <path d="M20 44L32 28L44 44H20Z" fill="white"/>
+            <path d="M20 36L32 20L44 36H20Z" fill="white" opacity="0.8"/>
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#2563eb"/>
+                <stop offset="100%" style="stop-color:#1d4ed8"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-name">Lucky Admin</div>
+        <div class="brand-desc">小维后台管理系统</div>
+      </div>
+
       <div class="login-type">
         <span :class="{ active: loginType === 'account' }" @click="tabCheck('account')">账号登录</span>
         <span :class="{ active: loginType === 'email' }" @click="tabCheck('email')">邮箱登录</span>
       </div>
 
-      <!-- 账号登录表单 -->
-      <el-form v-if="loginType === 'account'" class="login-form" :model="loginForm" ref="loginForm" :rules="rules">
-        <el-form-item label="账号" prop="username">
-          <el-input style="font-weight: 600" v-model="loginForm.username" prefix-icon="el-icon-user" placeholder="请输入账号" clearable />
-        </el-form-item>
-
-        <el-form-item label="密码" prop="password">
-          <el-input
-            v-model="loginForm.password"
-            type="password"
-            prefix-icon="el-icon-lock"
-            clearable
-            placeholder="请输入密码"
-            show-password
-          />
-        </el-form-item>
-
-        <div class="form-options">
-          <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
-          <!-- <el-link type="primary" :underline="false">忘记密码</el-link> -->
-        </div>
-
-        <el-button type="primary" class="login-btn" @click.native.prevent="handleAccLogin" :loading="loading">登录</el-button>
-      </el-form>
-
-      <!-- 邮箱登录表单 -->
-      <el-form v-else class="login-form" :model="form2" ref="loginForm2" :rules="rules2">
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="form2.email" prefix-icon="el-icon-message" placeholder="请输入邮箱" clearable />
-        </el-form-item>
-
-        <el-form-item label="验证码" prop="emailCode" style="margin-bottom: 63px">
-          <div class="sms-code">
-            <el-input v-model="form2.emailCode" prefix-icon="el-icon-s-promotion" clearable placeholder="请输入验证码">
-              <el-button :loading="emailCodeLoading" slot="append" :disabled="isCounting" @click="handleGetCode">
-                {{ countdown > 0 ? `重新获取(${countdown}s)` : '获取验证码' }}
-              </el-button>
-            </el-input>
+      <div class="form-wrapper">
+        <transition name="form-fade" mode="out-in">
+          <el-form v-if="loginType === 'account'" class="login-form" :model="loginForm" ref="loginForm" :rules="rules" key="account">
+        <el-form-item prop="username" class="form-item">
+          <div class="input-group">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <el-input 
+              v-model="loginForm.username" 
+              placeholder="请输入账号" 
+              clearable
+              class="custom-input"
+            />
           </div>
         </el-form-item>
 
-        <el-button type="primary" class="login-btn" @click.native.prevent="handleEmailLogin" :loading="emailLoading">登录</el-button>
+        <el-form-item prop="password" class="form-item">
+          <div class="input-group">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <el-input
+              v-model="loginForm.password"
+              type="password"
+              clearable
+              placeholder="请输入密码"
+              show-password
+              class="custom-input"
+            />
+          </div>
+        </el-form-item>
+
+        <div class="form-options">
+          <el-checkbox v-model="loginForm.rememberMe" class="remember-checkbox">记住密码</el-checkbox>
+          <el-link type="primary" :underline="false" class="forgot-link">忘记密码</el-link>
+        </div>
+
+        <el-button type="primary" class="login-btn" @click.native.prevent="handleAccLogin" :loading="loading">
+          <span class="btn-text">登 录</span>
+        </el-button>
       </el-form>
-      <div id="captcha-div" class="yzmStyle"></div>
-      <!-- 其他登录方式 -->
-      <div class="other-login">
-        <el-divider style="background: pink">选择其他登录方式</el-divider>
-        <!-- 这里可以添加图标按钮 -->
+
+      <el-form v-else class="login-form" :model="form2" ref="loginForm2" :rules="rules2" key="email">
+        <el-form-item prop="email" class="form-item">
+          <div class="input-group">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </span>
+            <el-input v-model="form2.email" placeholder="请输入邮箱" clearable class="custom-input" />
+          </div>
+        </el-form-item>
+
+        <el-form-item prop="emailCode" class="form-item">
+          <div class="input-group">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </span>
+            <div class="code-input-wrapper">
+              <el-input v-model="form2.emailCode" placeholder="请输入验证码" clearable class="custom-input code-input" />
+              <el-button 
+                :loading="emailCodeLoading" 
+                :disabled="isCounting" 
+                @click="handleGetCode"
+                class="code-btn"
+              >
+                {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
+              </el-button>
+            </div>
+          </div>
+        </el-form-item>
+
+        <el-button type="primary" class="login-btn" @click.native.prevent="handleEmailLogin" :loading="emailLoading">
+          <span class="btn-text">登 录</span>
+        </el-button>
+      </el-form>
+        </transition>
       </div>
-      <div class="oauth">
-        <div @click="doSocialLogin('qq')" class="oauth-login" style="width: 27px; height: 27px">
-          <el-image :src="require('@/assets/images/qq.png')" fit="contain"></el-image>
+
+      <div class="oauth-section">
+        <div class="oauth-divider">
+          <span class="divider-line"></span>
+          <span class="divider-text">其他登录方式</span>
+          <span class="divider-line"></span>
         </div>
-        <div @click="doSocialLogin('gitee')" class="oauth-login" style="margin: 2px 0 0 18px">
-          <el-image :src="require('@/assets/images/gitee.png')" fit="contain"></el-image>
-        </div>
-        <div @click="doSocialLogin('github')" class="oauth-login" style="margin: 2px 0 0 14px">
-          <el-image :src="require('@/assets/images/github.png')" fit="contain"></el-image>
+        <div class="oauth-list">
+          <div @click="doSocialLogin('qq')" class="oauth-item ">
+            <el-image :src="require('@/assets/images/qq.png')" fit="contain"   style="width: 32px; height: 32px;"></el-image>
+          </div>
+          <div @click="doSocialLogin('gitee')" class="oauth-item ">
+            <el-image :src="require('@/assets/images/gitee.png')" fit="contain"></el-image>
+          </div>
+          <div @click="doSocialLogin('github')" class="oauth-item ">
+            <el-image :src="require('@/assets/images/github.png')" fit="contain"></el-image>
+          </div>
         </div>
       </div>
     </div>
+
     <div class="copyright">
-      <p style="letter-spacing: 1px; color: #000">
-        Copyright © 2023 小维后台管理系统 |
-        <a href="https://beian.miit.gov.cn/" style="text-decoration: none; color: #000">
-          <span style="padding: 2px">
-            <img src="https://imgs.luckynwa.top/profile/blog/gonganbeian.png" style="height: 12.6px; margin-left: 1px" />
-            <span style="margin-left: 3px">闽ICP备 2023003457号-1</span>
-          </span>
+      <p>
+        Copyright © 2023 Lucky Admin |
+        <a href="https://beian.miit.gov.cn/" target="_blank">
+          <img src="https://imgs.luckynwa.top/profile/blog/gonganbeian.png" alt="备案" />
+          <span>闽ICP备 2023003457号-1</span>
         </a>
       </p>
     </div>
@@ -92,7 +157,7 @@ import { encrypt, decrypt } from '@/utils/jsencrypt'
 export default {
   data() {
     return {
-      emailEcodeTime: 300, //邮箱验证码时常  默认5分钟
+      emailEcodeTime: 300,
       loginType: 'account',
       phone: '',
       smsCode: '',
@@ -109,86 +174,53 @@ export default {
       rules: {
         username: [
           { required: true, message: '请输入账号', trigger: 'blur' },
-          {
-            min: 1,
-            max: 45,
-            message: '账号长度必须为 1-45 位',
-            trigger: 'blur',
-          },
+          { min: 1, max: 45, message: '账号长度必须为 1-45 位', trigger: 'blur' },
         ],
         password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
       },
       rules2: {
         email: [
-          {
-            required: true,
-            message: '请输入邮箱地址',
-            trigger: 'blur',
-          },
-          {
-            pattern: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/,
-            message: '邮箱格式无效（正确示例：user.name@example.com）',
-            trigger: ['change'],
-          },
+          { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+          { pattern: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/, message: '邮箱格式无效', trigger: ['change'] },
         ],
         emailCode: [
-          {
-            required: true,
-            message: '请输入验证码',
-            trigger: 'blur',
-          },
-          {
-            min: 5,
-            max: 8,
-            message: '验证码长度必须为 5-8 位',
-            trigger: 'blur',
-          },
+          { required: true, message: '请输入验证码', trigger: 'blur' },
+          { min: 5, max: 8, message: '验证码长度必须为 5-8 位', trigger: 'blur' },
         ],
       },
       countdown: 0,
       timer: null,
-      loading: false, //登录防重复点击
+      loading: false,
       emailLoading: false,
       emailCodeLoading: false,
-      captchaEnabled: false, //验证码开关
+      captchaEnabled: false,
       redirect: undefined,
     }
   },
-  //方法处理----------------------------------------------------------------------------------------------
   methods: {
-    //邮箱登录
     handleEmailLogin() {
       this.$refs.loginForm2.validate((valid) => {
         if (valid) {
           this.emailLoading = true
-          this.handleEmailLogin()
+          this.$store
+            .dispatch('EmailLogin', this.form2)
+            .then(() => {
+              this.$router.push({ path: this.redirect || '/' }).catch(() => {})
+            })
+            .catch(() => {
+              this.emailLoading = false
+            })
         } else {
           return false
         }
       })
     },
-    //邮箱登录--处理数据
-    handleEmailLogin() {
-      this.$store
-        .dispatch('EmailLogin', this.form2)
-        .then(() => {
-          this.$router.push({ path: this.redirect || '/' }).catch(() => {})
-        })
-        .catch(() => {
-          this.emailLoading = false
-        })
-    },
-    // 获取验证码处理
     async handleGetCode() {
       try {
-        // 先验证邮箱格式
         let valid = await this.validateEmailField()
-        if (!valid.isPass) return //邮箱校验不通过直接返回
-
+        if (!valid.isPass) return
         this.emailCodeLoading = true
-        // 开始倒计时
         this.startCountdown()
-        // 调用获取验证码接口
         sendEmailCode(this.form2.email).then((res) => {
           if (res.data.code === 200) {
             this.$message.success('验证码已发送，请注意查收')
@@ -202,19 +234,13 @@ export default {
         }
       }
     },
-    // 独立的邮箱验证方法
     validateEmailField() {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         this.$refs.loginForm2.validateField('email', (errorMessage) => {
-          if (!errorMessage) {
-            resolve({ isPass: true }) // 验证成功
-          } else {
-            resolve({ isPass: false }) // 验证失败
-          }
+          resolve({ isPass: !errorMessage })
         })
       })
     },
-    // 倒计时逻辑
     startCountdown() {
       this.emailCodeLoading = false
       this.countdown = this.emailEcodeTime
@@ -227,7 +253,6 @@ export default {
         }
       }, 1000)
     },
-    //账号登录
     handleAccLogin() {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
@@ -257,15 +282,11 @@ export default {
         }
       })
     },
-
-    //获取qq的跳转链接到第三方页面扫描登录
     doSocialLogin(source) {
       authBinding(source).then((res) => {
         top.location.href = res.msg
       })
     },
-
-    //头部标签切换   看看哪些数据切换要重置
     tabCheck(type) {
       this.loginType = type
       this.loading = false
@@ -295,14 +316,13 @@ export default {
       return this.countdown > 0
     },
   },
-  //生命周期----------------------------------------------------------------------------------------------
   created() {
     this.getCode()
     this.getCookie()
   },
   watch: {
     $route: {
-      handler: function (route) {
+      handler(route) {
         this.redirect = route.query && route.query.redirect
       },
       immediate: true,
@@ -313,190 +333,549 @@ export default {
 
 <style lang="scss" scoped>
 .login-container {
-  padding: 0;
-  margin: 0;
+  position: relative;
+  width: 100vw;
   height: 100vh;
+  overflow: hidden;
   display: flex;
-  justify-content: flex-end; /* 将子元素对齐到右侧 */
+  justify-content: flex-end;
+  align-items: stretch;
   background-image: url(../assets/images/login_lucky.jpg);
-  // background-size: 100% 100%;
-  // background-size: cover; /* 关键修改：保持宽高比覆盖整个容器 */
-  // background-position: center; /* 确保图片居中 */
-
-  background-size: 100% auto; /* 宽度100%，高度自动 */
-  overflow: hidden; /* 隐藏可能溢出的部分 */
+  background-size: 100% 100%;
+  background-position: center;
 }
 
 .login-card {
-  position: relative;
-  width: 37.5%;
-  padding: 20px;
-  /* background: #000; */
+  width: 38%;
+  min-width: 360px;
+  background: #ffffff;
+  padding: 60px 48px;
+  animation: cardFadeIn 0.5s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.form-fade-enter-active,
+.form-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.form-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.form-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.brand-section {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.brand-logo {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+}
+
+.brand-logo svg {
+  width: 100%;
+  height: 100%;
+}
+
+.brand-name {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.brand-desc {
+  font-size: 13px;
+  color: #64748b;
 }
 
 .login-type {
-  margin-top: 90px;
-  text-align: center;
-  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .login-type span {
-  margin: 0 20px;
-  cursor: pointer;
-  color: #000;
-  font-size: 24px;
+  position: relative;
+  padding: 6px 28px;
+  font-size: 16px;
   font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .login-type span.active {
   color: #409eff;
-  font-weight: bold;
+}
+
+.login-type span.active::after {
+  content: '';
+  position: absolute;
+  bottom: -21px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  background: #409eff;
+  border-radius: 3px;
+}
+
+.form-wrapper {
+  min-height: 280px;
+  position: relative;
 }
 
 .login-form {
-  margin-top: 20px;
-  padding: 40px;
+  margin-top: 0;
+  padding: 0;
+}
+
+.form-item {
+  margin-bottom: 18px;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.input-group:focus-within {
+  background: #ffffff;
+  border-color: #409eff;
+  box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.1);
+}
+
+.input-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.input-group:focus-within .input-icon {
+  color: #409eff;
+}
+
+.input-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.custom-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 14px;
+}
+
+.custom-input ::v-deep .el-input__inner {
+  border: none;
+  background: transparent;
+  padding: 0;
+  height: 44px;
+  line-height: 44px;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.custom-input ::v-deep .el-input__inner:focus {
+  box-shadow: none;
+}
+
+.custom-input ::v-deep .el-input__prefix {
+  display: none;
+}
+
+.code-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.code-input {
+  border-radius: 0;
+}
+
+.code-btn {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 0 10px 10px 0;
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.code-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #409eff;
+}
+
+.code-btn:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
 }
 
 .form-options {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  align-items: center;
+  margin-bottom: 22px;
+  padding: 0 4px;
+}
+
+.remember-checkbox {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.remember-checkbox ::v-deep .el-checkbox__label {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.remember-checkbox ::v-deep .el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+.forgot-link {
+  font-size: 13px;
+  color: #409eff;
 }
 
 .login-btn {
   width: 100%;
-}
-
-.other-login {
-  font-size: 12px;
-  padding: 20px 40px 20px;
-}
-
-::v-deep .other-login .el-divider__text {
-  font-size: 12px;
-  // background-color: transparent !important;
-}
-.copyright {
-  color: #999;
-  font-size: 10px;
-  position: absolute;
-
-  bottom: 1%;
-  right: 50%; /* 将元素向右移动50%的视窗宽度 */
-  transform: translateX(50%); /* 使用translateX调整元素位置，使其完全居中 */
-  text-align: center;
-}
-
-.yzmStyle {
-  position: absolute;
-  top: 460px;
-  left: 160px;
-}
-
-::v-deep.login-form .el-input__inner {
-  height: 47px !important;
-  line-height: 47px;
+  height: 47px;
+  background: #2866ef;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
   font-weight: 600;
+  color: #ffffff;
+  transition: all 0.3s ease;
 }
-.oauth {
+
+.login-btn:hover:not(:disabled) {
+  background: #1a56d9;
+}
+
+.login-btn ::v-deep .el-button__text {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 3px;
+}
+
+.oauth-section {
+  margin-top: 28px;
+}
+
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.divider-text {
+  padding: 0 14px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.oauth-list {
   display: flex;
   justify-content: center;
-  .oauth-login {
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-  }
+  gap: 20px;
 }
 
-/* 对于移动设备进行调整 */
-@media (max-width: 600px) {
+.oauth-item {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.oauth-item:hover {
+  transform: translateY(-2px);
+}
+
+.oauth-item svg {
+  width: 18px;
+  height: 18px;
+}
+
+
+
+
+
+.copyright {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 100;
+}
+
+.copyright p {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 1px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  margin: 0;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+}
+
+.copyright a {
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.copyright a:hover {
+  color: #ffffff;
+}
+
+.copyright img {
+  height: 13px;
+}
+
+@media (max-width: 768px) {
   .login-container {
-    padding: 0;
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center; /* 居中 */
-    align-items: center; /* 垂直居中 */
-    background-image: url(../assets/images/login_lucky.jpg);
+    justify-content: center;
     background-size: 550% 118%;
   }
 
   .login-card {
-    position: relative;
-    width: 90%; /* 宽度适应屏幕 */
-    max-width: 400px; /* 最大宽度限制 */
-    padding: 20px;
-    box-sizing: border-box;
+    width: 90%;
+    max-width: 400px;
+    min-width: auto;
+    padding: 36px 24px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   }
 
-  .login-type {
-    text-align: center;
-    margin-bottom: 20px;
+  .form-wrapper {
+    min-height: 240px;
+  }
+  
+  .brand-logo {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 10px;
+  }
+  
+  .brand-name {
+    font-size: 22px;
+  }
+  
+  .login-type span {
+    padding: 6px 18px;
+    font-size: 14px;
+  }
+  
+  .input-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .custom-input ::v-deep .el-input__inner {
+    height: 40px;
+    line-height: 40px;
+  }
+  
+  .login-btn {
+    height: 44px;
+  }
+  
+  .oauth-item {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .copyright p {
+    font-size: 9px;
+    padding: 6px 12px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .login-card {
+    padding: 70px 56px;
+  }
+
+  .form-wrapper {
+    min-height: 320px;
+  }
+  
+  .brand-logo {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 18px;
+  }
+  
+  .brand-name {
+    font-size: 30px;
+  }
+  
+  .brand-desc {
+    font-size: 15px;
+  }
+  
+  .login-type span {
+    padding: 8px 36px;
+    font-size: 18px;
+  }
+  
+  .input-icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .input-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .custom-input ::v-deep .el-input__inner {
+    height: 48px;
+    line-height: 48px;
     font-size: 16px;
   }
-
-  .login-type span {
-    margin: 0 15px;
-    cursor: pointer;
-    color: #000;
-    font-size: 18px;
-    font-weight: 600;
-  }
-
-  .login-type span.active {
-    color: #409eff;
-  }
-
-  .login-form {
-    margin-top: 20px;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-
-  .mobile-form {
-    padding: 10px;
-  }
-
-  .form-options {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-
+  
   .login-btn {
-    width: 100%;
+    height: 52px;
+    font-size: 17px;
   }
-
-  .other-login {
-    text-align: center;
+  
+  .oauth-item {
+    width: 44px;
+    height: 44px;
   }
-  .el-divider__text {
-    padding: 0;
-    font-size: 9px;
-    color: rgb(243, 227, 227);
-    background-color: transparent;
+  
+  .oauth-item svg {
+    width: 20px;
+    height: 20px;
   }
-  .copyright {
-    color: #999;
-    font-size: 7px;
-    text-align: center;
-    position: absolute;
-    bottom: 10px;
-    width: 100%;
+  
+  .copyright p {
+    font-size: 13px;
+    padding: 10px 20px;
   }
 }
-</style>
 
-<style>
-.login-form .el-input__inner {
-  height: 47px;
-  line-height: 47px;
-  /* font-weight: 600; */
-}
+@media (min-width: 2560px) {
+  .login-card {
+    padding: 80px 64px;
+  }
 
-.login-form .el-button--medium {
-  height: 47px;
-  background: #2866ef;
+  .form-wrapper {
+    min-height: 360px;
+  }
+  
+  .brand-logo {
+    width: 88px;
+    height: 88px;
+    margin-bottom: 22px;
+  }
+  
+  .brand-name {
+    font-size: 34px;
+  }
+  
+  .brand-desc {
+    font-size: 17px;
+  }
+  
+  .login-type span {
+    padding: 10px 44px;
+    font-size: 20px;
+  }
+  
+  .input-icon {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .input-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .custom-input ::v-deep .el-input__inner {
+    height: 52px;
+    line-height: 52px;
+    font-size: 18px;
+  }
+  
+  .login-btn {
+    height: 56px;
+    font-size: 19px;
+  }
+  
+  .oauth-item {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .oauth-item svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .copyright p {
+    font-size: 15px;
+    padding: 12px 24px;
+  }
 }
 </style>
