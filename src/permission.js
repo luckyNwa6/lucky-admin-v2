@@ -6,7 +6,7 @@ import 'nprogress/nprogress.css'
 import { getToken } from '@/utils/auth'
 import { isRelogin } from '@/utils/request'
 
-NProgress.configure({ showSpinner: false })
+NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.1 })
 
 const whiteList = ['/login', '/social-login', '/auth-redirect', '/bind', '/register']
 

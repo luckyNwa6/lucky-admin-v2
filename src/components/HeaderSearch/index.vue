@@ -163,11 +163,17 @@ export default {
     cursor: pointer;
     font-size: 18px;
     vertical-align: middle;
+    fill: #595959;
+    transition: fill 0.3s;
+  }
+
+  .search-icon:hover {
+    fill: #1890ff;
   }
 
   .header-search-select {
     font-size: 18px;
-    transition: width 0.2s;
+    transition: width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
     width: 0;
     overflow: hidden;
     background: transparent;
@@ -176,19 +182,26 @@ export default {
     vertical-align: middle;
 
     ::v-deep .el-input__inner {
-      border-radius: 0;
-      border: 0;
-      padding-left: 0;
-      padding-right: 0;
+      border-radius: 4px;
+      border: 1px solid #d9d9d9;
+      padding-left: 12px;
+      padding-right: 12px;
       box-shadow: none !important;
-      border-bottom: 1px solid #d9d9d9;
+      height: 32px;
+      line-height: 32px;
+      font-size: 14px;
       vertical-align: middle;
+
+      &:focus {
+        border-color: #1890ff;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+      }
     }
   }
 
   &.show {
     .header-search-select {
-      width: 210px;
+      width: 240px;
       margin-left: 10px;
     }
   }

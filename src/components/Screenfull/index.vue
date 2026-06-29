@@ -49,9 +49,14 @@ export default {
 .screenfull-svg {
   display: inline-block;
   cursor: pointer;
-  fill: #5a5e66;;
+  fill: #595959;
   width: 20px;
   height: 20px;
-  vertical-align: 10px;
+  vertical-align: middle;
+  transition: fill 0.3s;
+}
+
+.screenfull-svg:hover {
+  fill: #1890ff;
 }
 </style>

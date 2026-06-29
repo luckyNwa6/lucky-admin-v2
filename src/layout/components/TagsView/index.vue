@@ -13,6 +13,7 @@
         @click.middle.native="!isAffix(tag)?closeSelectedTag(tag):''"
         @contextmenu.prevent.native="openMenu(tag,$event)"
       >
+        <span class="tag-dot" v-if="isActive(tag)"></span>
         {{ tag.title }}
         <span v-if="!isAffix(tag)" class="el-icon-close" @click.prevent.stop="closeSelectedTag(tag)" />
       </router-link>
@@ -123,7 +124,6 @@ export default {
     initTags() {
       const affixTags = this.affixTags = this.filterAffixTags(this.routes)
       for (const tag of affixTags) {
-        // Must have tag name
         if (tag.name) {
           this.$store.dispatch('tagsView/addVisitedView', tag)
         }
@@ -141,7 +141,6 @@ export default {
         for (const tag of tags) {
           if (tag.to.path === this.$route.path) {
             this.$refs.scrollPane.moveToTarget(tag)
-            // when query is different then update
             if (tag.to.fullPath !== this.$route.fullPath) {
               this.$store.dispatch('tagsView/updateVisitedView', this.$route)
             }
@@ -178,7 +177,7 @@ export default {
       })
     },
     closeOthersTags() {
-      this.$router.push(this.selectedTag.fullPath).catch(()=>{});
+      this.$router.push(this.selectedTag.fullPath).catch(() => {});
       this.$tab.closeOtherPage(this.selectedTag).then(() => {
         this.moveToCurrentTag()
       })
@@ -196,10 +195,7 @@ export default {
       if (latestView) {
         this.$router.push(latestView.fullPath)
       } else {
-        // now the default is to redirect to the home page if there is no tags-view,
-        // you can adjust it according to your needs.
         if (view.name === 'Dashboard') {
-          // to reload home page
           this.$router.replace({ path: '/redirect' + view.fullPath })
         } else {
           this.$router.push('/')
@@ -208,10 +204,10 @@ export default {
     },
     openMenu(tag, e) {
       const menuMinWidth = 105
-      const offsetLeft = this.$el.getBoundingClientRect().left // container margin left
-      const offsetWidth = this.$el.offsetWidth // container width
-      const maxLeft = offsetWidth - menuMinWidth // left boundary
-      const left = e.clientX - offsetLeft + 15 // 15: margin right
+      const offsetLeft = this.$el.getBoundingClientRect().left
+      const offsetWidth = this.$el.offsetWidth
+      const maxLeft = offsetWidth - menuMinWidth
+      const left = e.clientX - offsetLeft + 15
 
       if (left > maxLeft) {
         this.left = maxLeft
@@ -235,66 +231,96 @@ export default {
 
 <style lang="scss" scoped>
 .tags-view-container {
-  height: 34px;
+  height: 40px;
   width: 100%;
   background: #fff;
-  border-bottom: 1px solid #d8dce5;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .12), 0 0 3px 0 rgba(0, 0, 0, .04);
+  border-bottom: 1px solid #f0f0f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
   .tags-view-wrapper {
     .tags-view-item {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       position: relative;
       cursor: pointer;
-      height: 26px;
-      line-height: 26px;
-      border: 1px solid #d8dce5;
-      color: #495060;
+      height: 28px;
+      line-height: 28px;
+      border: 1px solid #e8e8e8;
+      color: #595959;
       background: #fff;
-      padding: 0 8px;
+      padding: 0 10px;
       font-size: 12px;
       margin-left: 5px;
-      margin-top: 4px;
+      margin-top: 6px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+
       &:first-of-type {
-        margin-left: 15px;
+        margin-left: 16px;
       }
+
       &:last-of-type {
-        margin-right: 15px;
+        margin-right: 16px;
       }
+
+      &:hover {
+        color: #1890ff;
+        border-color: #1890ff;
+        background-color: #e6f7ff;
+      }
+
       &.active {
-        background-color: #42b983;
+        background-color: #1890ff;
         color: #fff;
-        border-color: #42b983;
+        border-color: #1890ff;
+        font-weight: 500;
+
         &::before {
-          content: '';
-          background: #fff;
+          display: none;
+        }
+
+        .tag-dot {
           display: inline-block;
-          width: 8px;
-          height: 8px;
+          width: 6px;
+          height: 6px;
+          background: #fff;
           border-radius: 50%;
-          position: relative;
-          margin-right: 2px;
+          margin-right: 6px;
         }
       }
     }
   }
+
   .contextmenu {
     margin: 0;
     background: #fff;
     z-index: 3000;
     position: absolute;
     list-style-type: none;
-    padding: 5px 0;
+    padding: 4px 0;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 400;
-    color: #333;
-    box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, .3);
+    color: #595959;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e8e8e8;
+
     li {
       margin: 0;
-      padding: 7px 16px;
+      padding: 8px 16px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+
+      i {
+        font-size: 14px;
+      }
+
       &:hover {
-        background: #eee;
+        background: #e6f7ff;
+        color: #1890ff;
       }
     }
   }
@@ -302,25 +328,34 @@ export default {
 </style>
 
 <style lang="scss">
-//reset element css of el-icon-close
+// reset element css of el-icon-close
 .tags-view-wrapper {
   .tags-view-item {
     .el-icon-close {
       width: 16px;
       height: 16px;
-      vertical-align: 2px;
+      vertical-align: 0px;
       border-radius: 50%;
       text-align: center;
-      transition: all .3s cubic-bezier(.645, .045, .355, 1);
+      transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
       transform-origin: 100% 50%;
+      margin-left: 4px;
+
       &:before {
-        transform: scale(.6);
+        transform: scale(0.7);
         display: inline-block;
-        vertical-align: -3px;
+        vertical-align: -1px;
       }
+
       &:hover {
-        background-color: #b4bccc;
+        background-color: rgba(0, 0, 0, 0.15);
         color: #fff;
+      }
+    }
+
+    &.active .el-icon-close {
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.3);
       }
     }
   }

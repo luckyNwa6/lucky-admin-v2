@@ -1,31 +1,38 @@
 /**
-* I think element-ui's default theme color is too light for long-term use.
-* So I modified the default color and you can modify it to your liking.
-**/
+ * Element UI 企业级主题变量配置
+ * 优化为更专业的蓝色系配色
+ */
 
-/* theme color */
+/* 主题色 */
 $--color-primary: #1890ff;
-$--color-success: #13ce66;
-$--color-warning: #ffba00;
-$--color-danger: #ff4949;
-// $--color-info: #1E1E1E;
+$--color-success: #52c41a;
+$--color-warning: #faad14;
+$--color-danger: #f5222d;
+$--color-info: #1890ff;
 
-$--button-font-weight: 400;
+/* 文字颜色 */
+$--color-text-regular: #595959;
+$--color-text-secondary: #8c8c8c;
+$--color-text-placeholder: #bfbfbf;
 
-// $--color-text-regular: #1f2d3d;
+/* 边框 */
+$--border-color-base: #d9d9d9;
+$--border-color-light: #e8e8e8;
+$--border-color-lighter: #f0f0f0;
+$--border-color-extra-light: #f5f5f5;
 
-$--border-color-light: #dfe4ed;
-$--border-color-lighter: #e6ebf5;
+/* 表格 */
+$--table-border: 1px solid #e8e8e8;
 
-$--table-border: 1px solid #dfe6ec;
+/* 按钮 */
+$--button-font-weight: 500;
 
-/* icon font path, required */
+/* 字体路径 */
 $--font-path: '~element-ui/lib/theme-chalk/fonts';
 
 @import "~element-ui/packages/theme-chalk/src/index";
 
 // the :export directive is the magic sauce for webpack
-// https://www.bluematador.com/blog/how-to-share-variables-between-js-and-sass
 :export {
   theme: $--color-primary;
 }

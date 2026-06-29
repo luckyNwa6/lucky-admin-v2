@@ -54,3 +54,19 @@ export default {
 
 }
 </script>
+
+<style scoped>
+.size-icon {
+  display: inline-block;
+  cursor: pointer;
+  fill: #595959;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  transition: fill 0.3s;
+}
+
+.size-icon:hover {
+  fill: #1890ff;
+}
+</style>

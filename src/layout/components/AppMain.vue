@@ -44,25 +44,26 @@ export default {
 
 <style lang="scss" scoped>
 .app-main {
-  /* 50= navbar  50  */
-  min-height: calc(100vh - 50px);
+  /* 56= navbar */
+  min-height: calc(100vh - 56px);
   width: 100%;
   position: relative;
   overflow: hidden;
+  background-color: #f0f2f5;
 }
 
 .fixed-header + .app-main {
-  padding-top: 50px;
+  padding-top: 56px;
 }
 
 .hasTagsView {
   .app-main {
-    /* 84 = navbar + tags-view = 50 + 34 */
-    min-height: calc(100vh - 84px);
+    /* 96 = navbar + tags-view = 56 + 40 */
+    min-height: calc(100vh - 96px);
   }
 
   .fixed-header + .app-main {
-    padding-top: 84px;
+    padding-top: 96px;
   }
 }
 </style>
@@ -81,11 +82,15 @@ export default {
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #f1f1f1;
+  background-color: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #c0c0c0;
+  background-color: rgba(0, 0, 0, 0.15);
   border-radius: 3px;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.25);
+  }
 }
 </style>
