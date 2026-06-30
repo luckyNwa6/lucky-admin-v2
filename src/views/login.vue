@@ -3,25 +3,15 @@
     <div class="login-card">
       <div class="brand-section">
         <div class="brand-logo">
-          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="32" cy="32" r="30" fill="url(#gradient)"/>
-            <path d="M20 44L32 28L44 44H20Z" fill="white"/>
-            <path d="M20 36L32 20L44 36H20Z" fill="white" opacity="0.8"/>
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#2563eb"/>
-                <stop offset="100%" style="stop-color:#1d4ed8"/>
-              </linearGradient>
-            </defs>
-          </svg>
+          <img :src="logo" alt="Lucky Admin" class="logo-img"/>
         </div>
         <div class="brand-name">Lucky Admin</div>
-        <div class="brand-desc">小维 · Java平台</div>
+        <div class="brand-desc">小维 · 文件管理系统</div>
       </div>
 
       <div class="login-type">
         <span :class="{ active: loginType === 'account' }" @click="tabCheck('account')">账号登录</span>
-        <span :class="{ active: loginType === 'email' }" @click="tabCheck('email')">邮箱登录</span>
+        <span :class="{ active: loginType === 'email' }" @click="tabCheck('email')">邮箱注册</span>
       </div>
 
       <div class="form-wrapper">
@@ -153,7 +143,7 @@ import { getCodeImg } from '@/api/login'
 import { authBinding } from '@/api/system/auth'
 import Cookies from 'js-cookie'
 import { encrypt, decrypt } from '@/utils/jsencrypt'
-
+import logoImg from '@/assets/logo/logo.png'
 export default {
   data() {
     return {
@@ -167,6 +157,7 @@ export default {
         rememberMe: false,
         uuid: '',
       },
+      logo: logoImg,
       form2: {
         email: '1656213092@qq.com',
         emailCode: '',
@@ -387,14 +378,22 @@ export default {
 }
 
 .brand-logo {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   margin: 0 auto 14px;
 }
 
-.brand-logo svg {
+.logo-img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
 }
 
 .brand-name {
@@ -710,9 +709,13 @@ export default {
   }
   
   .brand-logo {
-    width: 52px;
-    height: 52px;
+    width: 60px;
+    height: 60px;
     margin-bottom: 10px;
+  }
+
+  .logo-img {
+    border-radius: 12px;
   }
   
   .brand-name {
@@ -759,9 +762,13 @@ export default {
   }
   
   .brand-logo {
-    width: 72px;
-    height: 72px;
+    width: 80px;
+    height: 80px;
     margin-bottom: 18px;
+  }
+
+  .logo-img {
+    border-radius: 16px;
   }
   
   .brand-name {
@@ -824,9 +831,13 @@ export default {
   }
   
   .brand-logo {
-    width: 88px;
-    height: 88px;
+    width: 96px;
+    height: 96px;
     margin-bottom: 22px;
+  }
+
+  .logo-img {
+    border-radius: 18px;
   }
   
   .brand-name {
