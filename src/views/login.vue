@@ -16,7 +16,7 @@
           </svg>
         </div>
         <div class="brand-name">Lucky Admin</div>
-        <div class="brand-desc">小维后台管理系统</div>
+        <div class="brand-desc">小维 · Java平台</div>
       </div>
 
       <div class="login-type">
