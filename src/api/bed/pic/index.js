@@ -1,6 +1,14 @@
 import request from '@/utils/request'
 
-// 获取图片列表（分页）
+/**
+ * 获取图片列表（分页）
+ * @param {Object} data - 查询参数
+ * @param {string} [data.picName] - 图片名称（模糊搜索）
+ * @param {string} [data.folder] - 文件夹ID
+ * @param {number} [data.page=1] - 页码
+ * @param {number} [data.limit=20] - 每页条数
+ * @returns {Promise<{rows: Array, total: number}>}
+ */
 export function getYunList(data) {
   return request({
     url: '/bedPic/list',
@@ -9,7 +17,11 @@ export function getYunList(data) {
   })
 }
 
-// 上传单张图片
+/**
+ * 上传单张图片
+ * @param {FormData} data - 包含 file 和 folderId 的 FormData
+ * @returns {Promise}
+ */
 export function uploadPic(data) {
   return request({
     url: '/bedPic/upload',
@@ -21,7 +33,11 @@ export function uploadPic(data) {
   })
 }
 
-// 批量上传图片
+/**
+ * 批量上传图片
+ * @param {FormData} data - 包含多个 file 和 folderId 的 FormData
+ * @returns {Promise}
+ */
 export function uploadPics(data) {
   return request({
     url: '/bedPic/uploads',
@@ -33,7 +49,14 @@ export function uploadPics(data) {
   })
 }
 
-// 修改图片信息
+/**
+ * 修改图片信息
+ * @param {Object} data - 图片信息
+ * @param {number} data.id - 图片ID
+ * @param {string} [data.picName] - 新图片名称
+ * @param {string} [data.folder] - 所属文件夹
+ * @returns {Promise}
+ */
 export function updatePhoto(data) {
   return request({
     url: '/bedPic/update',
@@ -42,7 +65,11 @@ export function updatePhoto(data) {
   })
 }
 
-// 批量删除图片
+/**
+ * 批量删除图片
+ * @param {Array<number>} ids - 图片ID数组
+ * @returns {Promise}
+ */
 export function deletePhotos(ids) {
   return request({
     url: '/bedPic/delete',
@@ -51,7 +78,13 @@ export function deletePhotos(ids) {
   })
 }
 
-// 移动图片到指定文件夹
+/**
+ * 移动图片到指定文件夹
+ * @param {Object} data
+ * @param {Array<number>} data.ids - 图片ID数组
+ * @param {number} data.folderId - 目标文件夹ID
+ * @returns {Promise}
+ */
 export function movePhotos(data) {
   return request({
     url: '/bedPic/move',
@@ -60,24 +93,13 @@ export function movePhotos(data) {
   })
 }
 
-// 同步云端图片
+/**
+ * 同步云端图片
+ * @returns {Promise}
+ */
 export function syncYunPicL() {
   return request({
     url: '/bedPic/syncYunPic',
     method: 'get',
   })
-}
-
-// 兼容旧接口 - 删除图片
-export function delRemotePic(ids, path) {
-  return request({
-    url: '/bedPic/delete',
-    method: 'post',
-    data: ids,
-  })
-}
-
-// 兼容旧接口 - 修改信息
-export function modifyInfo(data) {
-  return updatePhoto(data)
 }

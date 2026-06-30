@@ -185,10 +185,11 @@
           background
           layout="total, sizes, prev, pager, next, jumper"
           :total="total"
-          :page.sync="pageIndex"
-          :limit.sync="pageSize"
+          :current-page="pageIndex"
+          :page-size="pageSize"
           :page-sizes="[20, 40, 60, 100]"
-          @pagination="loadImages"
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
         />
       </div>
     </div>
@@ -301,17 +302,18 @@ export default {
     // ========== 文件夹操作 ==========
     async loadFolders() {
       try {
-        const res = await getFolderList({ folderName: '', type: 'tree' })
-        if (res.code === 200) {
-          this.folderTree = res.data || []
+        const [treeRes, flatRes] = await Promise.all([
+          getFolderList({ folderName: '', type: 'tree' }),
+          getFolderList({ folderName: '', type: 'noTree' }),
+        ])
+        if (treeRes.code === 200) {
+          this.folderTree = treeRes.data || []
         }
-        // 同时加载扁平列表用于计数
-        const flatRes = await getFolderList({ folderName: '', type: 'noTree' })
         if (flatRes.code === 200) {
           this.flatFolders = flatRes.data || []
         }
       } catch (e) {
-        console.error('加载文件夹失败', e)
+        this.$message.error('加载文件夹失败')
       }
       this.loadImages()
     },
@@ -441,6 +443,17 @@ export default {
     },
 
     handleSearch() {
+      this.pageIndex = 1
+      this.loadImages()
+    },
+
+    handlePageChange(page) {
+      this.pageIndex = page
+      this.loadImages()
+    },
+
+    handleSizeChange(size) {
+      this.pageSize = size
       this.pageIndex = 1
       this.loadImages()
     },

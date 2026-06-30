@@ -33,9 +33,8 @@
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-        <el-button icon="el-icon-download" size="mini" @click="loadDocx">下载DOCX替换文档</el-button>
+        <el-button icon="el-icon-download" size="mini" @click="loadDocx">下载DOCX</el-button>
         <el-button icon="el-icon-download" size="mini" @click="loadExcel">下载EXCEL</el-button>
-        <el-button icon="el-icon-download" size="mini" @click="testTime">测试按钮</el-button>
       </el-form-item>
     </el-form>
 
@@ -138,7 +137,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态" prop="studentStatus">
-          <el-select v-model="form.studentStatus" placeholder="请选择状态" clearable size="small">
+          <el-select v-model="queryParams.studentStatus" placeholder="请选择状态" clearable size="small">
             <el-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :label="dict.label" :value="dict.value"></el-option>
           </el-select>
         </el-form-item>
@@ -163,35 +162,23 @@
 
 <script>
 import { listStudent, getStudent, delStudent, addStudent, updateStudent, exportStudent } from '@/api/open/student'
-
 import { downLoadDocx, downloadExcel } from '@/api/open/poi'
-
 import { base64ToFile } from '@/utils/ruoyi.js'
+
 export default {
   name: 'Student',
   dicts: ['sys_normal_disable', 'sys_user_sex'],
-  components: {},
   data() {
     return {
-      // 遮罩层
       loading: true,
-      // 选中数组
       ids: [],
-      // 非单个禁用
       single: true,
-      // 非多个禁用
       multiple: true,
-      // 显示搜索条件
       showSearch: true,
-      // 总条数
       total: 0,
-      // 学生信息表格数据
       studentList: [],
-      // 弹出层标题
       title: '',
-      // 是否显示弹出层
       open: false,
-      // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
@@ -202,50 +189,70 @@ export default {
         studentStatus: null,
         studentBirthday: null,
       },
-      // 表单参数
       form: {},
-      // 表单校验
-      rules: {},
+      rules: {
+        studentName: [
+          { required: true, message: '请输入学生名称', trigger: 'blur' },
+          { max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' },
+        ],
+        studentAge: [
+          { required: true, message: '请输入年龄', trigger: 'blur' },
+          { pattern: /^(?:[1-9][0-9]?|1[01][0-9]|120)$/, message: '请输入有效年龄(1-120)', trigger: 'blur' },
+        ],
+        studentSex: [
+          { required: true, message: '请选择性别', trigger: 'change' },
+        ],
+        studentStatus: [
+          { required: true, message: '请选择状态', trigger: 'change' },
+        ],
+      },
     }
   },
   created() {
     this.getList()
   },
   methods: {
-    testTime() {
-      let time = this.parseTime(new Date(), '{y}-{m}-{d}-{h}-{i}-{s}')
-      console.log('🚀 ~ testTime ~ time:', time)
-    },
+    /** 下载 Word 文档 */
     loadDocx() {
       downLoadDocx().then((res) => {
-        console.log('🚀 ~ downLoadDocx ~ res:', res)
-        let fileName = `小维word文档_${this.parseTime(new Date(), '{y}-{m}-{d}-{h}-{i}-{s}')}.docx`
+        const fileName = `小维word文档_${this.parseTime(new Date(), '{y}-{m}-{d}-{h}-{i}-{s}')}.docx`
         base64ToFile(res.data, fileName)
+      }).catch(() => {
+        this.$modal.msgError('下载文档失败')
       })
     },
 
+    /** 下载 Excel 文档 */
     loadExcel() {
       downloadExcel().then((res) => {
-        console.log('🚀 ~ downloadExcel ~ res:', res)
-        let fileName = `小维excel文档_${this.parseTime(new Date(), '{y}-{m}-{d}-{h}-{i}-{s}')}.xlsx`
+        const fileName = `小维excel文档_${this.parseTime(new Date(), '{y}-{m}-{d}-{h}-{i}-{s}')}.xlsx`
         base64ToFile(res.data.data, fileName)
+      }).catch(() => {
+        this.$modal.msgError('下载Excel失败')
       })
     },
+
     /** 查询学生信息列表 */
     getList() {
       this.loading = true
       listStudent(this.queryParams).then((response) => {
         this.studentList = response.rows
         this.total = response.total
+      }).catch(() => {
+        this.studentList = []
+        this.total = 0
+      }).finally(() => {
         this.loading = false
       })
     },
-    // 取消按钮
+
+    /** 取消按钮 */
     cancel() {
       this.open = false
       this.reset()
     },
-    // 表单重置
+
+    /** 表单重置 */
     reset() {
       this.form = {
         studentId: null,
@@ -258,28 +265,33 @@ export default {
       }
       this.resetForm('form')
     },
+
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1
       this.getList()
     },
+
     /** 重置按钮操作 */
     resetQuery() {
       this.resetForm('queryForm')
       this.handleQuery()
     },
-    // 多选框选中数据
+
+    /** 多选框选中数据 */
     handleSelectionChange(selection) {
       this.ids = selection.map((item) => item.studentId)
       this.single = selection.length !== 1
       this.multiple = !selection.length
     },
+
     /** 新增按钮操作 */
     handleAdd() {
       this.reset()
       this.open = true
       this.title = '添加学生信息'
     },
+
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
@@ -288,28 +300,27 @@ export default {
         this.form = response.data
         this.open = true
         this.title = '修改学生信息'
+      }).catch(() => {
+        this.$modal.msgError('获取学生信息失败')
       })
     },
+
     /** 提交按钮 */
     submitForm() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
-          if (this.form.studentId != null) {
-            updateStudent(this.form).then((response) => {
-              this.$modal.msgSuccess('修改成功')
-              this.open = false
-              this.getList()
-            })
-          } else {
-            addStudent(this.form).then((response) => {
-              this.$modal.msgSuccess('新增成功')
-              this.open = false
-              this.getList()
-            })
-          }
+          const request = this.form.studentId != null ? updateStudent(this.form) : addStudent(this.form)
+          request.then(() => {
+            this.$modal.msgSuccess(this.form.studentId != null ? '修改成功' : '新增成功')
+            this.open = false
+            this.getList()
+          }).catch(() => {
+            this.$modal.msgError(this.form.studentId != null ? '修改失败' : '新增失败')
+          })
         }
       })
     },
+
     /** 删除按钮操作 */
     handleDelete(row) {
       const studentIds = row.studentId || this.ids
@@ -317,29 +328,25 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
-      })
-        .then(function () {
-          return delStudent(studentIds)
-        })
-        .then(() => {
-          this.getList()
-          this.$modal.msgSuccess('删除成功')
-        })
+      }).then(() => {
+        return delStudent(studentIds)
+      }).then(() => {
+        this.getList()
+        this.$modal.msgSuccess('删除成功')
+      }).catch(() => {})
     },
+
     /** 导出按钮操作 */
     handleExport() {
-      const queryParams = this.queryParams
       this.$confirm('是否确认导出所有学生信息数据项?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
-      })
-        .then(function () {
-          return exportStudent(queryParams)
-        })
-        .then((response) => {
-          this.download(response.msg)
-        })
+      }).then(() => {
+        return exportStudent(this.queryParams)
+      }).then((response) => {
+        this.download(response.msg)
+      }).catch(() => {})
     },
   },
 }
