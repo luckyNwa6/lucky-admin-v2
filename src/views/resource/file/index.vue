@@ -136,6 +136,7 @@
           :data="dataList"
           v-loading="loading"
           border
+          height="100%"
           @selection-change="handleSelectionChange"
           style="width: 100%"
         >
@@ -253,7 +254,7 @@ export default {
   data() {
     return {
       // 视图模式
-      viewMode: 'grid',
+      viewMode: 'table',
       // 文件夹
       folderTree: [],
       flatFolders: [],
@@ -718,6 +719,7 @@ export default {
   flex-direction: column;
   overflow: hidden;
   padding: 16px;
+  min-height: 0;
 }
 
 .bed-toolbar {
@@ -884,6 +886,7 @@ export default {
 .image-table {
   flex: 1;
   overflow: hidden;
+  height: 0;
 
   .el-table {
     height: 100%;
@@ -899,6 +902,30 @@ export default {
   padding: 12px 0;
   display: flex;
   justify-content: flex-end;
+}
+
+// ========== 滚动条样式 ==========
+.sidebar-content,
+.image-grid,
+.image-table {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
 }
 
 // ========== 响应式 ==========
