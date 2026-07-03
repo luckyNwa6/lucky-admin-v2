@@ -6,7 +6,7 @@ import request from '@/utils/request'
  * @param {string} [data.picName] - 图片名称（模糊搜索）
  * @param {string} [data.folder] - 文件夹ID
  * @param {number} [data.page=1] - 页码
- * @param {number} [data.limit=20] - 每页条数
+ * @param {number} [data.limit=24] - 每页条数
  * @returns {Promise<{rows: Array, total: number}>}
  */
 export function getYunList(data) {

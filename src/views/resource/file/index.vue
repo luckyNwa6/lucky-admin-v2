@@ -7,16 +7,8 @@
         <el-button type="text" icon="el-icon-plus" @click="handleAddFolder" class="add-btn">新建</el-button>
       </div>
       <div class="sidebar-content">
-        <div
-          class="folder-item"
-          :class="{ active: selectedFolderId === '' }"
-          @click="handleSelectFolder('')"
-        >
-          <i class="el-icon-folder-opened"></i>
-          <span>全部图片</span>
-          <span class="folder-count">{{ totalCount }}</span>
-        </div>
         <el-tree
+          ref="folderTree"
           :data="folderTree"
           :props="{ children: 'children', label: 'folderName' }"
           node-key="id"
@@ -187,7 +179,7 @@
           :total="total"
           :current-page="pageIndex"
           :page-size="pageSize"
-          :page-sizes="[20, 40, 60, 100]"
+          :page-sizes="[24, 48, 72, 96]"
           @current-change="handlePageChange"
           @size-change="handleSizeChange"
         />
@@ -266,13 +258,12 @@ export default {
       folderTree: [],
       flatFolders: [],
       selectedFolderId: '',
-      totalCount: 0,
       // 图片列表
       dataList: [],
       loading: false,
       total: 0,
       pageIndex: 1,
-      pageSize: 40,
+      pageSize: 24,
       searchName: '',
       // 选择
       selectedIds: [],
@@ -312,15 +303,18 @@ export default {
         if (flatRes.code === 200) {
           this.flatFolders = flatRes.data || []
         }
+
+        // 默认选中第一个文件夹（pic）
+        if (this.folderTree.length > 0 && !this.selectedFolderId) {
+          const firstFolder = this.folderTree[0]
+          this.selectedFolderId = firstFolder.id
+          this.$nextTick(() => {
+            this.$refs.folderTree && this.$refs.folderTree.setCurrentKey(firstFolder.id)
+          })
+        }
       } catch (e) {
         this.$message.error('加载文件夹失败')
       }
-      this.loadImages()
-    },
-
-    handleSelectFolder(id) {
-      this.selectedFolderId = id
-      this.pageIndex = 1
       this.loadImages()
     },
 
@@ -430,7 +424,6 @@ export default {
         if (res.code === 200) {
           this.dataList = res.rows || []
           this.total = res.total || 0
-          this.totalCount = this.total
         } else {
           this.dataList = []
           this.total = 0
@@ -673,12 +666,6 @@ export default {
     i {
       color: #1890ff;
     }
-  }
-
-  .folder-count {
-    margin-left: auto;
-    font-size: 12px;
-    color: #bfbfbf;
   }
 }
 
