@@ -3,7 +3,7 @@
     <div class="login-card">
       <div class="brand-section">
         <div class="brand-logo">
-          <img :src="logo" alt="Lucky Admin" class="logo-img"/>
+          <img :src="logo" alt="Lucky Admin" class="logo-img" />
         </div>
         <div class="brand-name">Lucky Admin</div>
         <div class="brand-desc">小维 · 文件管理系统</div>
@@ -17,91 +17,81 @@
       <div class="form-wrapper">
         <transition name="form-fade" mode="out-in">
           <el-form v-if="loginType === 'account'" class="login-form" :model="loginForm" ref="loginForm" :rules="rules" key="account">
-        <el-form-item prop="username" class="form-item">
-          <div class="input-group">
-            <span class="input-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-            </span>
-            <el-input 
-              v-model="loginForm.username" 
-              placeholder="请输入账号" 
-              clearable
-              class="custom-input"
-            />
-          </div>
-        </el-form-item>
+            <el-form-item prop="username" class="form-item">
+              <div class="input-group">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </span>
+                <el-input v-model="loginForm.username" placeholder="请输入账号" clearable class="custom-input" />
+              </div>
+            </el-form-item>
 
-        <el-form-item prop="password" class="form-item">
-          <div class="input-group">
-            <span class="input-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-            </span>
-            <el-input
-              v-model="loginForm.password"
-              type="password"
-              clearable
-              placeholder="请输入密码"
-              show-password
-              class="custom-input"
-            />
-          </div>
-        </el-form-item>
+            <el-form-item prop="password" class="form-item">
+              <div class="input-group">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <el-input
+                  v-model="loginForm.password"
+                  type="password"
+                  clearable
+                  placeholder="请输入密码"
+                  show-password
+                  class="custom-input"
+                />
+              </div>
+            </el-form-item>
 
-        <div class="form-options">
-          <el-checkbox v-model="loginForm.rememberMe" class="remember-checkbox">记住密码</el-checkbox>
-          <el-link type="primary" :underline="false" class="forgot-link">忘记密码</el-link>
-        </div>
-
-        <el-button type="primary" class="login-btn" @click.native.prevent="handleAccLogin" :loading="loading">
-          <span class="btn-text">登 录</span>
-        </el-button>
-      </el-form>
-
-      <el-form v-else class="login-form" :model="form2" ref="loginForm2" :rules="rules2" key="email">
-        <el-form-item prop="email" class="form-item">
-          <div class="input-group">
-            <span class="input-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                <polyline points="22,6 12,13 2,6"/>
-              </svg>
-            </span>
-            <el-input v-model="form2.email" placeholder="请输入邮箱" clearable class="custom-input" />
-          </div>
-        </el-form-item>
-
-        <el-form-item prop="emailCode" class="form-item">
-          <div class="input-group">
-            <span class="input-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-            </span>
-            <div class="code-input-wrapper">
-              <el-input v-model="form2.emailCode" placeholder="请输入验证码" clearable class="custom-input code-input" />
-              <el-button 
-                :loading="emailCodeLoading" 
-                :disabled="isCounting" 
-                @click="handleGetCode"
-                class="code-btn"
-              >
-                {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
-              </el-button>
+            <div class="form-options">
+              <el-checkbox v-model="loginForm.rememberMe" class="remember-checkbox">记住密码</el-checkbox>
+              <el-link type="primary" :underline="false" class="forgot-link">忘记密码</el-link>
             </div>
-          </div>
-        </el-form-item>
 
-        <el-button type="primary" class="login-btn" @click.native.prevent="handleEmailLogin" :loading="emailLoading">
-          <span class="btn-text">登 录</span>
-        </el-button>
-      </el-form>
+            <el-button type="primary" class="login-btn" @click.native.prevent="handleAccLogin" :loading="loading">
+              <span class="btn-text">登 录</span>
+            </el-button>
+          </el-form>
+
+          <el-form v-else class="login-form" :model="form2" ref="loginForm2" :rules="rules2" key="email">
+            <el-form-item prop="email" class="form-item">
+              <div class="input-group">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                </span>
+                <el-input v-model="form2.email" placeholder="请输入邮箱" clearable class="custom-input" />
+              </div>
+            </el-form-item>
+
+            <el-form-item prop="emailCode" class="form-item">
+              <div class="input-group">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                </span>
+                <div class="code-input-wrapper">
+                  <el-input v-model="form2.emailCode" placeholder="请输入验证码" clearable class="custom-input code-input" />
+                  <el-button :loading="emailCodeLoading" :disabled="isCounting" @click="handleGetCode" class="code-btn">
+                    {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
+                  </el-button>
+                </div>
+              </div>
+            </el-form-item>
+
+            <el-button type="primary" class="login-btn" @click.native.prevent="handleEmailLogin" :loading="emailLoading">
+              <span class="btn-text">登 录</span>
+            </el-button>
+          </el-form>
         </transition>
       </div>
 
@@ -112,15 +102,15 @@
           <span class="divider-line"></span>
         </div>
         <div class="oauth-list">
-          <div @click="doSocialLogin('qq')" class="oauth-item ">
-            <el-image :src="require('@/assets/images/qq.png')" fit="contain"   style="width: 32px; height: 32px;"></el-image>
+          <div @click="doSocialLogin('qq')" class="oauth-item">
+            <el-image :src="require('@/assets/images/qq.png')" fit="contain" style="width: 42px; height: 42px"></el-image>
           </div>
-          <div @click="doSocialLogin('gitee')" class="oauth-item ">
+          <!-- <div @click="doSocialLogin('gitee')" class="oauth-item ">
             <el-image :src="require('@/assets/images/gitee.png')" fit="contain"></el-image>
           </div>
           <div @click="doSocialLogin('github')" class="oauth-item ">
             <el-image :src="require('@/assets/images/github.png')" fit="contain"></el-image>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -649,10 +639,6 @@ export default {
   height: 18px;
 }
 
-
-
-
-
 .copyright {
   position: absolute;
   bottom: 15px;
@@ -707,7 +693,7 @@ export default {
   .form-wrapper {
     min-height: 240px;
   }
-  
+
   .brand-logo {
     width: 60px;
     height: 60px;
@@ -717,35 +703,35 @@ export default {
   .logo-img {
     border-radius: 12px;
   }
-  
+
   .brand-name {
     font-size: 22px;
   }
-  
+
   .login-type span {
     padding: 6px 18px;
     font-size: 14px;
   }
-  
+
   .input-icon {
     width: 40px;
     height: 40px;
   }
-  
+
   .custom-input ::v-deep .el-input__inner {
     height: 40px;
     line-height: 40px;
   }
-  
+
   .login-btn {
     height: 44px;
   }
-  
+
   .oauth-item {
     width: 36px;
     height: 36px;
   }
-  
+
   .copyright p {
     font-size: 9px;
     padding: 6px 12px;
@@ -760,7 +746,7 @@ export default {
   .form-wrapper {
     min-height: 320px;
   }
-  
+
   .brand-logo {
     width: 80px;
     height: 80px;
@@ -770,51 +756,51 @@ export default {
   .logo-img {
     border-radius: 16px;
   }
-  
+
   .brand-name {
     font-size: 30px;
   }
-  
+
   .brand-desc {
     font-size: 15px;
   }
-  
+
   .login-type span {
     padding: 8px 36px;
     font-size: 18px;
   }
-  
+
   .input-icon {
     width: 48px;
     height: 48px;
   }
-  
+
   .input-icon svg {
     width: 20px;
     height: 20px;
   }
-  
+
   .custom-input ::v-deep .el-input__inner {
     height: 48px;
     line-height: 48px;
     font-size: 16px;
   }
-  
+
   .login-btn {
     height: 52px;
     font-size: 17px;
   }
-  
+
   .oauth-item {
     width: 44px;
     height: 44px;
   }
-  
+
   .oauth-item svg {
     width: 20px;
     height: 20px;
   }
-  
+
   .copyright p {
     font-size: 13px;
     padding: 10px 20px;
@@ -829,7 +815,7 @@ export default {
   .form-wrapper {
     min-height: 360px;
   }
-  
+
   .brand-logo {
     width: 96px;
     height: 96px;
@@ -839,51 +825,51 @@ export default {
   .logo-img {
     border-radius: 18px;
   }
-  
+
   .brand-name {
     font-size: 34px;
   }
-  
+
   .brand-desc {
     font-size: 17px;
   }
-  
+
   .login-type span {
     padding: 10px 44px;
     font-size: 20px;
   }
-  
+
   .input-icon {
     width: 52px;
     height: 52px;
   }
-  
+
   .input-icon svg {
     width: 22px;
     height: 22px;
   }
-  
+
   .custom-input ::v-deep .el-input__inner {
     height: 52px;
     line-height: 52px;
     font-size: 18px;
   }
-  
+
   .login-btn {
     height: 56px;
     font-size: 19px;
   }
-  
+
   .oauth-item {
     width: 52px;
     height: 52px;
   }
-  
+
   .oauth-item svg {
     width: 24px;
     height: 24px;
   }
-  
+
   .copyright p {
     font-size: 15px;
     padding: 12px 24px;
