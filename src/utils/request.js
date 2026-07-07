@@ -105,6 +105,10 @@ service.interceptors.response.use(
       }
       return Promise.reject('无效的会话，或者会话已过期，请重新登录。')
     }
+    if (code === 409) {
+      // 文件已存在，返回完整响应由调用方自行处理
+      return res.data
+    }
     if (code === 10002) {
       // 第三方登录错误提示
       MessageBox.confirm(msg, '系统提示', {
@@ -120,7 +124,10 @@ service.interceptors.response.use(
         .catch(() => {})
       return Promise.reject(new Error(msg))
     } else if (code === 500) {
-      Message({ message: msg, type: 'error' })
+      // 如果请求头标记了 silentError，则不弹窗，由调用方自行处理
+      if (!(res.config && res.config.headers && res.config.headers.silentError)) {
+        Message({ message: msg, type: 'error' })
+      }
       return Promise.reject(new Error(msg))
     } else if (code === 601) {
       Message({ message: msg, type: 'warning' })
