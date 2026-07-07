@@ -336,7 +336,7 @@ export default {
       this.skippedCount = 0
       this.totalCount = pendingFiles.length
 
-      const concurrency = 2 // 最大并发数
+      const concurrency = 10 // 最大并发数
       const basePrefix = this.data.prefix || ''
 
       const uploadOne = async (item, retry = 0) => {
