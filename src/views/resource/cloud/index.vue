@@ -199,7 +199,7 @@
     <el-dialog :visible.sync="createFolderVisible" title="新建文件夹" width="400px" append-to-body>
       <el-form :model="newFolderForm" label-width="80px">
         <el-form-item label="路径">
-          <el-input v-model="newFolderForm.name" placeholder="如: / 表示根目录, /pic/blog 表示pic下新建blog" @keyup.enter.native="createFolder" />
+          <el-input v-model="newFolderForm.name" placeholder="如: / 表示根目录, /profile/blog 表示profile下新建blog" @keyup.enter.native="createFolder" />
         </el-form-item>
       </el-form>
       <span slot="footer">
@@ -231,7 +231,7 @@
 </template>
 
 <script>
-import { listR2Files, deleteR2File, deleteR2Files, listR2Folders, createR2Folder, deleteR2Folder, renameR2File, refreshFolderCache } from '@/api/bed/r2file'
+import { listR2Files, deleteR2File, deleteR2Files, listR2AllFolders, createR2Folder, deleteR2Folder, renameR2File, refreshFolderCache } from '@/api/bed/r2file'
 import CloudUpload from '@/components/CloudUpload'
 
 export default {
@@ -243,7 +243,7 @@ export default {
       folderList: [],
       foldersLoading: false,
       // 当前前缀
-      currentPrefix: 'pic/',
+      currentPrefix: 'profile/',
       // 文件列表
       files: [],
       loading: false,
@@ -281,23 +281,14 @@ export default {
     async loadFolders() {
       this.foldersLoading = true
       try {
-        // 递归加载所有层级的文件夹
-        const allFolders = []
-        const loadLevel = async (prefix) => {
-          const res = await listR2Folders(prefix)
-          if (res.code === 200) {
-            for (const f of (res.data || [])) {
-              allFolders.push({
-                ...f,
-                displayName: '/' + f.path.replace(/\/$/, '')
-              })
-              // 递归加载子级
-              await loadLevel(f.path)
-            }
-          }
+        // 一次请求获取所有层级的文件夹
+        const res = await listR2AllFolders('')
+        if (res.code === 200) {
+          this.folderList = (res.data || []).map(f => ({
+            ...f,
+            displayName: '/' + f.path.replace(/\/$/, '')
+          }))
         }
-        await loadLevel('')
-        this.folderList = allFolders
       } catch (error) {
         console.error('加载文件夹失败:', error)
       } finally {
@@ -563,7 +554,7 @@ export default {
       }
       this.creatingFolder = true
       try {
-        // 解析路径：/ 表示根目录, /pic/blog 表示绝对路径
+        // 解析路径：/ 表示根目录, /profile/blog 表示绝对路径
         let folderPath
         if (input === '/') {
           // 根目录下创建，需要用户输入文件夹名

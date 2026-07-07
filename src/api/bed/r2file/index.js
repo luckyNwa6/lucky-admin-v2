@@ -70,6 +70,19 @@ export function listR2Folders(prefix = '') {
 }
 
 /**
+ * 递归列出所有层级的文件夹（一次请求获取完整文件夹树）
+ * @param {string} prefix - 父前缀
+ * @returns {Promise}
+ */
+export function listR2AllFolders(prefix = '') {
+  return request({
+    url: '/r2File/listAllFolders',
+    method: 'post',
+    data: { prefix }
+  })
+}
+
+/**
  * 获取文件的代理URL（解决CORS跨域问题）
  * @param {string} key - 文件key
  * @returns {string} 代理URL
