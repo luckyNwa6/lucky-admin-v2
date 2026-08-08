@@ -176,6 +176,7 @@ export default {
       emailCodeLoading: false,
       captchaEnabled: false,
       redirect: undefined,
+      fromHost: undefined,  // SSO来源域名
     }
   },
   methods: {
@@ -186,7 +187,7 @@ export default {
           this.$store
             .dispatch('EmailLogin', this.form2)
             .then(() => {
-              this.$router.push({ path: this.redirect || '/' }).catch(() => {})
+              this.handleLoginRedirect()
             })
             .catch(() => {
               this.emailLoading = false
@@ -250,7 +251,7 @@ export default {
           this.$store
             .dispatch('Login', this.loginForm)
             .then(() => {
-              this.$router.push({ path: this.redirect || '/' }).catch(() => {})
+              this.handleLoginRedirect()
             })
             .catch(() => {
               this.loading = false
@@ -267,6 +268,44 @@ export default {
       authBinding(source).then((res) => {
         top.location.href = res.msg
       })
+    },
+    handleLoginRedirect() {
+      // 处理SSO登录后的重定向
+      const redirect = this.redirect
+      const fromHost = this.fromHost
+      const currentHost = window.location.hostname
+
+      // 检查是否是SSO跨域跳转（来源域名与当前域名不同）
+      if (fromHost && fromHost !== currentHost) {
+        // SSO回跳：跳转到来源域名的对应路径
+        const protocol = window.location.protocol
+        const targetUrl = `${protocol}//${fromHost}${redirect || '/'}`
+        window.location.href = targetUrl
+        return
+      }
+
+      // 本地跳转
+      if (redirect) {
+        // 检查当前应用路由是否存在该路径
+        const routeExists = this.$router.options.routes.some(route => {
+          if (route.path === redirect) return true
+          if (route.children) {
+            return route.children.some(child => child.path === redirect)
+          }
+          return false
+        })
+
+        if (routeExists) {
+          // 路由存在，正常跳转
+          this.$router.push({ path: redirect }).catch(() => {})
+        } else {
+          // 路由不存在，跳转到首页
+          this.$router.push({ path: '/' }).catch(() => {})
+        }
+      } else {
+        // 没有redirect参数，跳转到首页
+        this.$router.push({ path: '/' }).catch(() => {})
+      }
     },
     tabCheck(type) {
       this.loginType = type
@@ -305,6 +344,7 @@ export default {
     $route: {
       handler(route) {
         this.redirect = route.query && route.query.redirect
+        this.fromHost = route.query && route.query.from
       },
       immediate: true,
     },

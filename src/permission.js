@@ -50,7 +50,9 @@ router.beforeEach((to, from, next) => {
       // 在免登录白名单，直接进入
       next()
     } else {
-      next(`/login?redirect=${encodeURIComponent(to.fullPath)}`) // 否则全部重定向到登录页
+      // 记录当前域名，用于SSO回跳
+      const fromHost = window.location.hostname
+      next(`/login?redirect=${encodeURIComponent(to.fullPath)}&from=${encodeURIComponent(fromHost)}`) // 否则全部重定向到登录页
       NProgress.done()
     }
   }
