@@ -7,9 +7,9 @@ export function getToken() {
 }
 
 export function setToken(token) {
-  return Cookies.set(TokenKey, token)
+  return Cookies.set(TokenKey, token, { domain: '.luckynwa.top' })
 }
 
 export function removeToken() {
-  return Cookies.remove(TokenKey)
+  return Cookies.remove(TokenKey, { domain: '.luckynwa.top' })
 }

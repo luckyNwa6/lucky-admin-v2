@@ -6,7 +6,7 @@
           <img :src="logo" alt="Lucky Admin" class="logo-img" />
         </div>
         <div class="brand-name">Lucky Admin</div>
-        <div class="brand-desc">小维 · 文件管理系统</div>
+        <div class="brand-desc">小维 · 后台管理系统</div>
       </div>
 
       <div class="login-type">
