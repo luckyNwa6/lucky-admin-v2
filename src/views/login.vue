@@ -302,9 +302,18 @@ export default {
 
       // 检查是否是SSO跨域跳转（来源域名与当前域名不同）
       if (fromHost && fromHost !== currentHost) {
-        // SSO回跳：跳转到来源域名的对应路径
-        const protocol = window.location.protocol
-        const targetUrl = new URL(`${protocol}//${fromHost}${redirect || '/'}`)
+        // SSO回跳：构建目标URL
+        let targetUrl
+
+        // 判断redirect是否已经是完整URL
+        if (redirect && redirect.startsWith('http')) {
+          // redirect是完整URL，直接使用
+          targetUrl = new URL(redirect)
+        } else {
+          // redirect是相对路径，拼接fromHost
+          const protocol = window.location.protocol
+          targetUrl = new URL(`${protocol}//${fromHost}${redirect || '/'}`)
+        }
 
         // 判断是否需要携带Token参数（开发环境跨主域：localhost -> luckynwa.top）
         const needsTokenParam = this.shouldPassTokenInUrl(targetUrl.hostname)
