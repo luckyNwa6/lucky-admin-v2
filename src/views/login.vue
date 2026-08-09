@@ -6,7 +6,7 @@
           <img :src="logo" alt="Lucky Admin" class="logo-img" />
         </div>
         <div class="brand-name">Lucky Admin</div>
-        <div class="brand-desc">小维 · 文件管理系统</div>
+        <div class="brand-desc">小维 · 后台管理系统</div>
       </div>
 
       <div class="login-type">
@@ -176,6 +176,7 @@ export default {
       emailCodeLoading: false,
       captchaEnabled: false,
       redirect: undefined,
+      fromHost: undefined,  // SSO来源域名
     }
   },
   methods: {
@@ -186,7 +187,7 @@ export default {
           this.$store
             .dispatch('EmailLogin', this.form2)
             .then(() => {
-              this.handleRedirect()
+              this.handleLoginRedirect()
             })
             .catch(() => {
               this.emailLoading = false
@@ -250,7 +251,7 @@ export default {
           this.$store
             .dispatch('Login', this.loginForm)
             .then(() => {
-              this.handleRedirect()
+              this.handleLoginRedirect()
             })
             .catch(() => {
               this.loading = false
@@ -264,76 +265,82 @@ export default {
       })
     },
 
-    /**
-     * 统一处理登录成功后的跳转
-     * 支持三种场景：
-     * 1. 开发环境跨域（localhost -> luckynwa.top）：URL参数传递Token
-     * 2. 生产环境跨子域（admin.luckynwa.top -> rag.luckynwa.top）：Cookie传递
-     * 3. 本地跳转：Vue Router跳转
-     */
-    handleRedirect() {
-      const redirectUrl = this.redirect || '/'
-      const isExternalUrl = redirectUrl.startsWith('http')
-
-      if (isExternalUrl) {
-        // 外部URL，使用window.location.href跳转
-        const url = new URL(redirectUrl)
-
-        // 判断是否需要携带Token参数（开发环境跨主域）
-        const needsTokenParam = this.shouldPassTokenInUrl(redirectUrl)
-
-        if (needsTokenParam) {
-          // 跨主域跳转，将Token作为URL参数传递
-          const token = this.$store.state.user.token
-          url.searchParams.set('token', token)
-        }
-
-        // 同主域或跨主域，都使用window.location.href跳转
-        // Cookie会自动携带（如果是同主域）
-        window.location.href = url.toString()
-      } else {
-        // 相对路径，使用Vue Router跳转
-        this.$router.push({ path: redirectUrl }).catch(() => {})
-      }
-    },
-
-    /**
-     * 判断是否需要在URL中传递Token
-     * @param {string} redirectUrl - 重定向URL
-     * @returns {boolean} 是否需要URL参数传递Token
-     */
-    shouldPassTokenInUrl(redirectUrl) {
-      // 相对路径，不需要Token参数
-      if (!redirectUrl.startsWith('http')) {
-        return false
-      }
-
-      try {
-        const targetUrl = new URL(redirectUrl)
-        const currentHost = window.location.hostname
-
-        // 提取主域名（如 admin.luckynwa.top -> luckynwa.top）
-        const getMainDomain = (hostname) => {
-          const parts = hostname.split('.')
-          if (parts.length <= 2) return hostname
-          // 取最后两部分作为主域名
-          return parts.slice(-2).join('.')
-        }
-
-        const targetMainDomain = getMainDomain(targetUrl.hostname)
-        const currentMainDomain = getMainDomain(currentHost)
-
-        // 如果主域名不同，说明是跨域（如 localhost -> luckynwa.top），需要Token参数
-        return targetMainDomain !== currentMainDomain
-      } catch (e) {
-        // URL解析失败，保守处理，传递Token
-        return true
-      }
-    },
     doSocialLogin(source) {
       authBinding(source).then((res) => {
         top.location.href = res.msg
       })
+    },
+
+    /**
+     * 判断是否需要在URL中传递Token
+     * @param {string} targetHostname - 目标主机名
+     * @returns {boolean} 是否需要URL参数传递Token
+     */
+    shouldPassTokenInUrl(targetHostname) {
+      const currentHost = window.location.hostname
+
+      // 提取主域名（如 admin.luckynwa.top -> luckynwa.top）
+      const getMainDomain = (hostname) => {
+        const parts = hostname.split('.')
+        if (parts.length <= 2) return hostname
+        // 取最后两部分作为主域名
+        return parts.slice(-2).join('.')
+      }
+
+      const targetMainDomain = getMainDomain(targetHostname)
+      const currentMainDomain = getMainDomain(currentHost)
+
+      // 如果主域名不同，说明是跨域（如 localhost -> luckynwa.top），需要Token参数
+      return targetMainDomain !== currentMainDomain
+    },
+
+    handleLoginRedirect() {
+      // 处理SSO登录后的重定向
+      const redirect = this.redirect
+      const fromHost = this.fromHost
+      const currentHost = window.location.hostname
+
+      // 检查是否是SSO跨域跳转（来源域名与当前域名不同）
+      if (fromHost && fromHost !== currentHost) {
+        // SSO回跳：跳转到来源域名的对应路径
+        const protocol = window.location.protocol
+        const targetUrl = new URL(`${protocol}//${fromHost}${redirect || '/'}`)
+
+        // 判断是否需要携带Token参数（开发环境跨主域：localhost -> luckynwa.top）
+        const needsTokenParam = this.shouldPassTokenInUrl(targetUrl.hostname)
+
+        if (needsTokenParam) {
+          // 跨主域跳转，将Token作为URL参数传递
+          const token = this.$store.state.user.token
+          targetUrl.searchParams.set('token', token)
+        }
+
+        window.location.href = targetUrl.toString()
+        return
+      }
+
+      // 本地跳转
+      if (redirect) {
+        // 检查当前应用路由是否存在该路径
+        const routeExists = this.$router.options.routes.some(route => {
+          if (route.path === redirect) return true
+          if (route.children) {
+            return route.children.some(child => child.path === redirect)
+          }
+          return false
+        })
+
+        if (routeExists) {
+          // 路由存在，正常跳转
+          this.$router.push({ path: redirect }).catch(() => {})
+        } else {
+          // 路由不存在，跳转到首页
+          this.$router.push({ path: '/' }).catch(() => {})
+        }
+      } else {
+        // 没有redirect参数，跳转到首页
+        this.$router.push({ path: '/' }).catch(() => {})
+      }
     },
     tabCheck(type) {
       this.loginType = type
@@ -372,6 +379,7 @@ export default {
     $route: {
       handler(route) {
         this.redirect = route.query && route.query.redirect
+        this.fromHost = route.query && route.query.from
       },
       immediate: true,
     },
