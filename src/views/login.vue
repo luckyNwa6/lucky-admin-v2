@@ -186,7 +186,7 @@ export default {
           this.$store
             .dispatch('EmailLogin', this.form2)
             .then(() => {
-              this.$router.push({ path: this.redirect || '/' }).catch(() => {})
+              this.handleRedirect()
             })
             .catch(() => {
               this.emailLoading = false
@@ -250,7 +250,7 @@ export default {
           this.$store
             .dispatch('Login', this.loginForm)
             .then(() => {
-              this.$router.push({ path: this.redirect || '/' }).catch(() => {})
+              this.handleRedirect()
             })
             .catch(() => {
               this.loading = false
@@ -262,6 +262,73 @@ export default {
           return false
         }
       })
+    },
+
+    /**
+     * 统一处理登录成功后的跳转
+     * 支持三种场景：
+     * 1. 开发环境跨域（localhost -> luckynwa.top）：URL参数传递Token
+     * 2. 生产环境跨子域（admin.luckynwa.top -> rag.luckynwa.top）：Cookie传递
+     * 3. 本地跳转：Vue Router跳转
+     */
+    handleRedirect() {
+      const redirectUrl = this.redirect || '/'
+      const isExternalUrl = redirectUrl.startsWith('http')
+
+      if (isExternalUrl) {
+        // 外部URL，使用window.location.href跳转
+        const url = new URL(redirectUrl)
+
+        // 判断是否需要携带Token参数（开发环境跨主域）
+        const needsTokenParam = this.shouldPassTokenInUrl(redirectUrl)
+
+        if (needsTokenParam) {
+          // 跨主域跳转，将Token作为URL参数传递
+          const token = this.$store.state.user.token
+          url.searchParams.set('token', token)
+        }
+
+        // 同主域或跨主域，都使用window.location.href跳转
+        // Cookie会自动携带（如果是同主域）
+        window.location.href = url.toString()
+      } else {
+        // 相对路径，使用Vue Router跳转
+        this.$router.push({ path: redirectUrl }).catch(() => {})
+      }
+    },
+
+    /**
+     * 判断是否需要在URL中传递Token
+     * @param {string} redirectUrl - 重定向URL
+     * @returns {boolean} 是否需要URL参数传递Token
+     */
+    shouldPassTokenInUrl(redirectUrl) {
+      // 相对路径，不需要Token参数
+      if (!redirectUrl.startsWith('http')) {
+        return false
+      }
+
+      try {
+        const targetUrl = new URL(redirectUrl)
+        const currentHost = window.location.hostname
+
+        // 提取主域名（如 admin.luckynwa.top -> luckynwa.top）
+        const getMainDomain = (hostname) => {
+          const parts = hostname.split('.')
+          if (parts.length <= 2) return hostname
+          // 取最后两部分作为主域名
+          return parts.slice(-2).join('.')
+        }
+
+        const targetMainDomain = getMainDomain(targetUrl.hostname)
+        const currentMainDomain = getMainDomain(currentHost)
+
+        // 如果主域名不同，说明是跨域（如 localhost -> luckynwa.top），需要Token参数
+        return targetMainDomain !== currentMainDomain
+      } catch (e) {
+        // URL解析失败，保守处理，传递Token
+        return true
+      }
     },
     doSocialLogin(source) {
       authBinding(source).then((res) => {
