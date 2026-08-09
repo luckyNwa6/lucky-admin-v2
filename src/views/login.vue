@@ -295,33 +295,44 @@ export default {
     },
 
     handleLoginRedirect() {
-      // 处理SSO登录后的重定向
       const redirect = this.redirect
       const fromHost = this.fromHost
       const currentHost = window.location.hostname
 
-      // 检查是否是SSO跨域跳转（来源域名与当前域名不同）
+      console.log('[SSO] handleLoginRedirect:', { redirect, fromHost, currentHost })
+
       if (fromHost && fromHost !== currentHost) {
-        // SSO回跳：构建目标URL
         let targetUrl
 
-        // 判断redirect是否已经是完整URL
-        if (redirect && redirect.startsWith('http')) {
-          // redirect是完整URL，直接使用
-          targetUrl = new URL(redirect)
-        } else {
-          // redirect是相对路径，拼接fromHost
-          const protocol = window.location.protocol
-          targetUrl = new URL(`${protocol}//${fromHost}${redirect || '/'}`)
+        try {
+          if (redirect) {
+            // 检查是否是完整 URL（带协议头）
+            if (/^https?:\/\//.test(redirect)) {
+              // 完整 URL，直接使用
+              targetUrl = new URL(redirect)
+            } else if (redirect.startsWith('//')) {
+              // 协议相对 URL（//localhost:5173/...），补上当前协议
+              targetUrl = new URL(window.location.protocol + redirect)
+            } else {
+              // 相对路径，拼接 fromHost
+              targetUrl = new URL(`${window.location.protocol}//${fromHost}${redirect}`)
+            }
+          } else {
+            // 没有 redirect，回到来源域名首页
+            targetUrl = new URL(`${window.location.protocol}//${fromHost}`)
+          }
+        } catch (e) {
+          console.error('[SSO] URL parse error:', e)
+          targetUrl = new URL(`${window.location.protocol}//${fromHost}`)
         }
 
-        // 判断是否需要携带Token参数（开发环境跨主域：localhost -> luckynwa.top）
-        const needsTokenParam = this.shouldPassTokenInUrl(targetUrl.hostname)
+        console.log('[SSO] Target URL:', targetUrl.toString())
 
-        if (needsTokenParam) {
-          // 跨主域跳转，将Token作为URL参数传递
+        // 跨主域跳转时，通过 URL 参数传递 Token（Cookie 无法跨域）
+        if (this.shouldPassTokenInUrl(targetUrl.hostname)) {
           const token = this.$store.state.user.token
           targetUrl.searchParams.set('token', token)
+          console.log('[SSO] Token added to URL')
         }
 
         window.location.href = targetUrl.toString()
@@ -389,6 +400,11 @@ export default {
       handler(route) {
         this.redirect = route.query && route.query.redirect
         this.fromHost = route.query && route.query.from
+        console.log('[SSO] Route query captured:', {
+          redirect: this.redirect,
+          fromHost: this.fromHost,
+          rawQuery: route.query,
+        })
       },
       immediate: true,
     },
