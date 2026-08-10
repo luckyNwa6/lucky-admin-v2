@@ -33,10 +33,26 @@ export function getAverageCycle() {
   })
 }
 
+// 获取平均经期持续天数
+export function getAverageDuration() {
+  return request({
+    url: '/reminder/period/averageDuration',
+    method: 'get'
+  })
+}
+
 // 预测下次经期
 export function predictNextPeriod() {
   return request({
     url: '/reminder/period/predict',
+    method: 'get'
+  })
+}
+
+// 预测下次经期结束日期
+export function predictNextPeriodEnd() {
+  return request({
+    url: '/reminder/period/predictEnd',
     method: 'get'
   })
 }

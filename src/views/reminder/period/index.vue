@@ -6,20 +6,26 @@
         <span>📊 经期预测</span>
       </div>
       <el-row :gutter="20">
-        <el-col :span="8">
+        <el-col :span="6">
           <div class="predict-item">
             <div class="predict-label">平均周期</div>
             <div class="predict-value">{{ averageCycle }} 天</div>
           </div>
         </el-col>
-        <el-col :span="8">
+        <el-col :span="6">
+          <div class="predict-item">
+            <div class="predict-label">平均经期</div>
+            <div class="predict-value">{{ averageDuration }} 天</div>
+          </div>
+        </el-col>
+        <el-col :span="6">
           <div class="predict-item">
             <div class="predict-label">预测下次经期</div>
             <div class="predict-value" v-if="predictedDate">{{ predictedDate }}</div>
             <div class="predict-value" v-else>暂无数据</div>
           </div>
         </el-col>
-        <el-col :span="8">
+        <el-col :span="6">
           <div class="predict-item">
             <div class="predict-label">距离今天</div>
             <div class="predict-value" v-if="daysUntilNext !== null">
@@ -183,7 +189,7 @@
 </template>
 
 <script>
-import { listPeriod, getPeriod, addPeriod, updatePeriod, delPeriod, getAverageCycle, predictNextPeriod } from "@/api/reminder/period";
+import { listPeriod, getPeriod, addPeriod, updatePeriod, delPeriod, getAverageCycle, getAverageDuration, predictNextPeriod } from "@/api/reminder/period";
 
 export default {
   name: "PeriodRecord",
@@ -209,6 +215,7 @@ export default {
       open: false,
       // 预测数据
       averageCycle: 28,
+      averageDuration: 5,
       predictedDate: null,
       daysUntilNext: null,
       // 查询参数
@@ -246,6 +253,10 @@ export default {
       // 获取平均周期
       getAverageCycle().then(response => {
         this.averageCycle = response.data;
+      });
+      // 获取平均经期持续天数
+      getAverageDuration().then(response => {
+        this.averageDuration = response.data;
       });
       // 获取预测日期
       predictNextPeriod().then(response => {

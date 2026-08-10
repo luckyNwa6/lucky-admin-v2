@@ -7,9 +7,13 @@ export function getToken() {
 }
 
 export function setToken(token) {
-  return Cookies.set(TokenKey, token, { domain: '.luckynwa.top' })
+  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  const options = isLocal ? {} : { domain: '.luckynwa.top' }
+  return Cookies.set(TokenKey, token, options)
 }
 
 export function removeToken() {
-  return Cookies.remove(TokenKey, { domain: '.luckynwa.top' })
+  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  const options = isLocal ? {} : { domain: '.luckynwa.top' }
+  return Cookies.remove(TokenKey, options)
 }

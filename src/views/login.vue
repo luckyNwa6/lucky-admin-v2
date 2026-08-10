@@ -103,7 +103,7 @@
         </div>
         <div class="oauth-list">
           <div @click="doSocialLogin('qq')" class="oauth-item">
-            <el-image :src="require('@/assets/images/qq.png')" fit="contain" style="width: 42px; height: 42px"></el-image>
+            <el-image :src="require('@/assets/images/qq.png')" fit="contain" style="width: 38px; height: 38px"></el-image>
           </div>
           <!-- <div @click="doSocialLogin('gitee')" class="oauth-item ">
             <el-image :src="require('@/assets/images/gitee.png')" fit="contain"></el-image>
@@ -692,7 +692,7 @@ export default {
 }
 
 .oauth-section {
-  margin-top: 28px;
+  margin-top: 2px;
 }
 
 .oauth-divider {

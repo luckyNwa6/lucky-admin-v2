@@ -84,7 +84,6 @@
                 :percentage="file.progress || 0"
                 :stroke-width="4"
                 :show-text="false"
-                status="primary"
               />
               <el-progress
                 v-else-if="file.status === 'success'"
