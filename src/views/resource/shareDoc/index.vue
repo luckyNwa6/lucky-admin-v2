@@ -23,6 +23,7 @@
           <el-option label="Word" value="word" />
           <el-option label="Markdown" value="md" />
           <el-option label="PDF" value="pdf" />
+          <el-option label="TXT" value="txt" />
         </el-select>
         <el-button type="primary" icon="el-icon-search" @click="loadDocs">搜索</el-button>
       </div>
@@ -135,6 +136,10 @@
         <div v-if="previewUrl" class="preview-content">
           <!-- Markdown预览 -->
           <div v-if="previewDocType === 'md'" class="markdown-preview" v-html="markdownContent"></div>
+          <!-- TXT预览 -->
+          <div v-else-if="previewDocType === 'txt'" class="txt-preview">
+            <pre>{{ txtContent }}</pre>
+          </div>
           <!-- PDF使用浏览器内置预览 -->
           <iframe
             v-else-if="previewDocType === 'pdf'"
@@ -206,7 +211,8 @@ export default {
       previewUrl: '',
       previewDocType: '',
       previewDocName: '',
-      markdownContent: ''
+      markdownContent: '',
+      txtContent: ''
     }
   },
   created() {
@@ -335,6 +341,7 @@ export default {
       this.previewDocName = row.docName
       this.previewUrl = ''
       this.markdownContent = ''
+      this.txtContent = ''
 
       try {
         const res = await getShareDocPreviewUrl(row.id)
@@ -346,6 +353,11 @@ export default {
             const response = await fetch(res.data.fileUrl)
             const text = await response.text()
             this.markdownContent = this.renderMarkdown(text)
+          }
+          // 如果是TXT，直接获取文本内容
+          if (row.docType === 'txt') {
+            const response = await fetch(res.data.fileUrl)
+            this.txtContent = await response.text()
           }
         } else {
           this.$message.error(res.msg || '获取预览失败')
@@ -440,7 +452,8 @@ export default {
         excel: 'el-icon-document',
         word: 'el-icon-document',
         md: 'el-icon-document',
-        pdf: 'el-icon-document'
+        pdf: 'el-icon-document',
+        txt: 'el-icon-document'
       }
       return icons[docType] || 'el-icon-document'
     },
@@ -450,7 +463,8 @@ export default {
         excel: 'success',
         word: 'primary',
         md: 'warning',
-        pdf: 'danger'
+        pdf: 'danger',
+        txt: 'info'
       }
       return tags[docType] || 'info'
     },
@@ -460,7 +474,8 @@ export default {
         excel: 'Excel',
         word: 'Word',
         md: 'Markdown',
-        pdf: 'PDF'
+        pdf: 'PDF',
+        txt: 'TXT'
       }
       return labels[docType] || docType
     },
@@ -692,6 +707,25 @@ export default {
 
 .markdown-preview a:hover {
   text-decoration: underline;
+}
+
+.txt-preview {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.txt-preview pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #303133;
+  background-color: #f6f8fa;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 0;
 }
 
 .markdown-preview hr {

@@ -21,7 +21,7 @@
       >
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-        <div class="el-upload__tip" slot="tip">支持 Excel、Word、Markdown、PDF 格式</div>
+        <div class="el-upload__tip" slot="tip">支持 Excel、Word、Markdown、PDF、TXT 格式</div>
       </el-upload>
 
       <!-- 上传进度列表 -->
@@ -134,7 +134,7 @@ export default {
   },
   computed: {
     acceptTypes() {
-      return '.xlsx,.xls,.docx,.doc,.md,.markdown,.pdf'
+      return '.xlsx,.xls,.docx,.doc,.md,.markdown,.pdf,.txt'
     },
     pendingCount() {
       return this.uploadFileList.filter(f => f.status !== 'success' && f.status !== 'fail').length

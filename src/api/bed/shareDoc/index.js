@@ -4,7 +4,7 @@ import request from '@/utils/request'
  * 文档列表
  * @param {Object} data - 查询参数
  * @param {string} data.docName - 文档名称搜索（可选）
- * @param {string} data.docType - 文档类型筛选（可选，excel/word/md）
+ * @param {string} data.docType - 文档类型筛选（可选，excel/word/md/pdf/txt）
  * @param {number} data.page - 页码
  * @param {number} data.limit - 每页数量
  * @returns {Promise}
