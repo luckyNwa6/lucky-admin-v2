@@ -354,10 +354,9 @@ export default {
             const text = await response.text()
             this.markdownContent = this.renderMarkdown(text)
           }
-          // 如果是TXT，直接获取文本内容
+          // 如果是TXT，获取文本内容并识别编码
           if (row.docType === 'txt') {
-            const response = await fetch(res.data.fileUrl)
-            this.txtContent = await response.text()
+            this.txtContent = await this.fetchTextContent(res.data.fileUrl)
           }
         } else {
           this.$message.error(res.msg || '获取预览失败')
@@ -373,6 +372,37 @@ export default {
     getOfficePreviewUrl(url) {
       // 使用微软Office Online预览
       return 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(url)
+    },
+    // 获取远程文本内容
+    async fetchTextContent(url) {
+      const response = await fetch(url)
+      const bytes = await response.arrayBuffer()
+      return this.decodeTextContent(bytes)
+    },
+    // 按BOM和字节特征解码，兼容UTF-8/UTF-16/GBK
+    decodeTextContent(bytes) {
+      if (!bytes || bytes.byteLength === 0) return ''
+
+      const view = new Uint8Array(bytes)
+      if (view.length >= 3 && view[0] === 0xef && view[1] === 0xbb && view[2] === 0xbf) {
+        return new TextDecoder('utf-8').decode(view.subarray(3))
+      }
+      if (view.length >= 2 && view[0] === 0xff && view[1] === 0xfe) {
+        return new TextDecoder('utf-16le').decode(view.subarray(2))
+      }
+      if (view.length >= 2 && view[0] === 0xfe && view[1] === 0xff) {
+        return new TextDecoder('utf-16be').decode(view.subarray(2))
+      }
+
+      try {
+        return new TextDecoder('utf-8', { fatal: true }).decode(view)
+      } catch (error) {
+        try {
+          return new TextDecoder('gbk').decode(view)
+        } catch (gbkError) {
+          return new TextDecoder('utf-8').decode(view)
+        }
+      }
     },
     // 简易Markdown渲染
     renderMarkdown(text) {
