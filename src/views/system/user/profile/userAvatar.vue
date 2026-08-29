@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="user-info-head" @click="editCropper()"><img v-bind:src="options.img" title="点击上传头像" class="img-circle img-lg" /></div>
+    <div class="user-info-head" :class="{ 'avatar-disabled': isTestUser }" :title="isTestUser ? 'test账号禁止修改头像' : '点击上传头像'" @click="editCropper()"><img v-bind:src="options.img" class="img-circle img-lg" /></div>
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body @opened="modalOpened" @close="closeDialog">
       <el-row>
         <el-col :xs="24" :md="12" :style="{ height: '350px' }">
@@ -27,26 +27,26 @@
       <el-row>
         <el-col :lg="2" :sm="3" :xs="3">
           <el-upload action="#" :http-request="requestUpload" :show-file-list="false" :before-upload="beforeUpload">
-            <el-button size="small">
+            <el-button size="small" :disabled="isTestUser">
               选择
               <i class="el-icon-upload el-icon--right"></i>
             </el-button>
           </el-upload>
         </el-col>
         <el-col :lg="{ span: 1, offset: 2 }" :sm="2" :xs="2">
-          <el-button icon="el-icon-plus" size="small" @click="changeScale(1)"></el-button>
+          <el-button icon="el-icon-plus" size="small" :disabled="isTestUser" @click="changeScale(1)"></el-button>
         </el-col>
         <el-col :lg="{ span: 1, offset: 1 }" :sm="2" :xs="2">
-          <el-button icon="el-icon-minus" size="small" @click="changeScale(-1)"></el-button>
+          <el-button icon="el-icon-minus" size="small" :disabled="isTestUser" @click="changeScale(-1)"></el-button>
         </el-col>
         <el-col :lg="{ span: 1, offset: 1 }" :sm="2" :xs="2">
-          <el-button icon="el-icon-refresh-left" size="small" @click="rotateLeft()"></el-button>
+          <el-button icon="el-icon-refresh-left" size="small" :disabled="isTestUser" @click="rotateLeft()"></el-button>
         </el-col>
         <el-col :lg="{ span: 1, offset: 1 }" :sm="2" :xs="2">
-          <el-button icon="el-icon-refresh-right" size="small" @click="rotateRight()"></el-button>
+          <el-button icon="el-icon-refresh-right" size="small" :disabled="isTestUser" @click="rotateRight()"></el-button>
         </el-col>
         <el-col :lg="{ span: 2, offset: 6 }" :sm="2" :xs="2">
-          <el-button type="primary" size="small" @click="uploadImg()">提 交</el-button>
+          <el-button type="primary" size="small" :disabled="isTestUser" @click="uploadImg()">提 交</el-button>
         </el-col>
       </el-row>
     </el-dialog>
@@ -55,12 +55,19 @@
 
 <script>
 import store from '@/store'
+import { mapGetters } from 'vuex'
 import { VueCropper } from 'vue-cropper'
 import { uploadAvatar } from '@/api/system/user'
 import { debounce } from '@/utils'
 
 export default {
   components: { VueCropper },
+  computed: {
+    ...mapGetters(['name']),
+    isTestUser() {
+      return this.name === 'test'
+    },
+  },
   data() {
     return {
       // 是否显示弹出层
@@ -85,6 +92,7 @@ export default {
   methods: {
     // 编辑头像
     editCropper() {
+      if (this.isTestUser) return
       this.open = true
     },
     // 打开弹出层结束时的回调
@@ -179,5 +187,13 @@ export default {
   cursor: pointer;
   line-height: 110px;
   border-radius: 50%;
+}
+
+.user-info-head.avatar-disabled {
+  cursor: not-allowed;
+}
+
+.user-info-head.avatar-disabled:hover:after {
+  content: none;
 }
 </style>

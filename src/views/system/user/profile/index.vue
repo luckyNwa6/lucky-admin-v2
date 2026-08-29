@@ -54,10 +54,10 @@
             <el-tab-pane label="基本资料" name="userinfo">
               <userInfo :user="user" />
             </el-tab-pane>
-            <el-tab-pane label="修改密码" name="resetPwd">
+            <el-tab-pane v-if="!isTestUser" label="修改密码" name="resetPwd">
               <resetPwd />
             </el-tab-pane>
-            <el-tab-pane label="第三方应用" name="thirdParty">
+            <el-tab-pane v-if="!isTestUser" label="第三方应用" name="thirdParty">
               <thirdParty :auths="auths" />
             </el-tab-pane>
           </el-tabs>
@@ -73,10 +73,17 @@ import userInfo from './userInfo'
 import resetPwd from './resetPwd'
 import thirdParty from './thirdParty'
 import { getUserProfile } from '@/api/system/user'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'Profile',
   components: { userAvatar, userInfo, resetPwd, thirdParty },
+  computed: {
+    ...mapGetters(['name']),
+    isTestUser() {
+      return this.name === 'test'
+    },
+  },
   data() {
     return {
       user: {},

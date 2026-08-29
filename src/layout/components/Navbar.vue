@@ -6,45 +6,26 @@
     <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav" />
 
     <div class="right-menu">
-      <template v-if="device !== 'mobile'">
-        <search id="header-search" class="right-menu-item" />
-        <el-tooltip content="博主的Github" effect="dark" placement="bottom">
-          <LuckyGit id="lucky-git" class="right-menu-item hover-effect" />
-        </el-tooltip>
-        <el-tooltip :content="noticeContent" effect="dark" placement="bottom">
-          <el-badge :value="noticeCount" class="right-menu-item hover-effect" :class="{ 'badge-custom': noticeCount > 0 }">
-            <i class="el-icon-message-solid" @click="toNoticePage"></i>
-          </el-badge>
-        </el-tooltip>
-
-        <el-tooltip content="文档地址" effect="dark" placement="bottom">
-          <LuckyDoc id="lucky-doc" class="right-menu-item hover-effect" />
-        </el-tooltip>
-
-        <screenfull id="screenfull" class="right-menu-item hover-effect" />
-
-        <el-tooltip content="布局大小" effect="dark" placement="bottom">
-          <size-select id="size-select" class="right-menu-item hover-effect" />
-        </el-tooltip>
-      </template>
-
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
           <img :src="avatar" class="user-avatar" />
           <span class="user-name">{{ name }}</span>
           <i class="el-icon-caret-bottom" />
         </div>
-        <el-dropdown-menu slot="dropdown">
+        <el-dropdown-menu slot="dropdown" class="avatar-dropdown-menu">
           <router-link to="/user/profile">
             <el-dropdown-item>
-              <i class="el-icon-user"></i> 个人中心
+              <i class="el-icon-user"></i>
+              <span>个人中心</span>
             </el-dropdown-item>
           </router-link>
           <el-dropdown-item @click.native="setting = true">
-            <i class="el-icon-setting"></i> 布局设置
+            <i class="el-icon-setting"></i>
+            <span>布局设置</span>
           </el-dropdown-item>
-          <el-dropdown-item divided @click.native="logout">
-            <i class="el-icon-switch-button"></i> 退出登录
+          <el-dropdown-item @click.native="logout">
+            <i class="el-icon-switch-button"></i>
+            <span>退出登录</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -57,26 +38,15 @@ import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
 import Hamburger from '@/components/Hamburger'
-import Screenfull from '@/components/Screenfull'
-import SizeSelect from '@/components/SizeSelect'
-import Search from '@/components/HeaderSearch'
-import LuckyGit from '@/components/Lucky/Git'
-import LuckyDoc from '@/components/Lucky/Doc'
-import { listNotice } from '@/api/system/notice'
 
 export default {
   components: {
     Breadcrumb,
     TopNav,
     Hamburger,
-    Screenfull,
-    SizeSelect,
-    Search,
-    LuckyGit,
-    LuckyDoc,
   },
   computed: {
-    ...mapGetters(['sidebar', 'avatar', 'device', 'name']),
+    ...mapGetters(['sidebar', 'avatar', 'name']),
     setting: {
       get() {
         return this.$store.state.settings.showSettings
@@ -94,22 +64,6 @@ export default {
       },
     },
   },
-  data() {
-    return {
-      noticeContent: '',
-      noticeCount: 0,
-      intervalId: null,
-    }
-  },
-  created() {
-    this.poll()
-  },
-  mounted() {
-    this.startPolling()
-  },
-  beforeDestroy() {
-    this.stopPolling()
-  },
   methods: {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
@@ -126,24 +80,6 @@ export default {
           })
         })
         .catch(() => {})
-    },
-    toNoticePage() {
-      this.$router.push('/system/notice')
-    },
-    startPolling() {
-      // 每隔一定时间执行轮询任务
-      // this.intervalId = setInterval(() => {
-      //   this.poll()
-      // }, 5000)
-    },
-    stopPolling() {
-      clearInterval(this.intervalId)
-    },
-    poll() {
-      listNotice().then((response) => {
-        this.noticeCount = response.total
-        this.noticeContent = '您有' + this.noticeCount + '条未读的信息'
-      })
     },
   },
 }
@@ -273,6 +209,43 @@ export default {
     @keyframes blink-animation {
       0% { opacity: 1; }
       100% { opacity: 0.1; }
+    }
+  }
+}
+</style>
+
+<style lang="scss">
+.el-dropdown-menu.avatar-dropdown-menu {
+  min-width: 100px;
+  padding: 6px;
+  margin-top: 8px;
+  border-radius: 10px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
+
+  .el-dropdown-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    margin: 2px 0;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #595959;
+
+    i {
+      font-size: 15px;
+      color: #8c8c8c;
+      transition: color 0.2s;
+    }
+
+    &:hover {
+      background-color: #f0f7ff;
+      color: #1890ff;
+
+      i {
+        color: #1890ff;
+      }
     }
   }
 }

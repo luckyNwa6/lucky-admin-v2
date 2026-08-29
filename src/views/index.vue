@@ -24,13 +24,6 @@
             <div class="stat-info">
               <div class="stat-title">{{ item.title }}</div>
               <div class="stat-value">{{ item.value }}</div>
-              <div class="stat-footer">
-                <span :class="['stat-trend', item.trend > 0 ? 'up' : 'down']">
-                  <i :class="item.trend > 0 ? 'el-icon-top' : 'el-icon-bottom'"></i>
-                  {{ Math.abs(item.trend) }}%
-                </span>
-                <span class="stat-period">较上周</span>
-              </div>
             </div>
             <div class="stat-icon" :style="{ backgroundColor: item.color + '15', color: item.color }">
               <i :class="item.icon"></i>
@@ -48,7 +41,8 @@
           <div slot="header" class="card-header">
             <span class="card-title">快捷操作</span>
           </div>
-          <div class="quick-actions">
+          <div v-if="isCommonRole" class="no-permission">暂无权限</div>
+          <div v-else class="quick-actions">
             <div class="action-item" v-for="(action, index) in quickActions" :key="index" @click="handleAction(action)">
               <div class="action-icon" :style="{ backgroundColor: action.color + '15', color: action.color }">
                 <i :class="action.icon"></i>
@@ -64,9 +58,9 @@
         <el-card class="recent-activity-card" shadow="hover">
           <div slot="header" class="card-header">
             <span class="card-title">最近动态</span>
-            <el-link type="primary" :underline="false" class="card-more">查看更多</el-link>
           </div>
-          <div class="activity-list">
+          <div v-if="isCommonRole" class="no-permission">暂无权限</div>
+          <div v-else class="activity-list">
             <div class="activity-item" v-for="(item, index) in recentActivities" :key="index">
               <div class="activity-dot" :style="{ backgroundColor: item.color }"></div>
               <div class="activity-content">
@@ -105,11 +99,20 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { getDashboardInfo, getDashboardStats } from '@/api/system/dashboard'
+import packageInfo from '../../package.json'
 
 export default {
   name: 'Dashboard',
+  created() {
+    this.getSystemInfo()
+    this.getStats()
+  },
   computed: {
-    ...mapGetters(['name', 'avatar']),
+    ...mapGetters(['name', 'avatar', 'roles']),
+    isCommonRole() {
+      return this.roles && this.roles.includes('common')
+    },
     greeting() {
       const hour = new Date().getHours()
       if (hour < 6) return '凌晨好'
@@ -132,10 +135,10 @@ export default {
   data() {
     return {
       statCards: [
-        { title: '用户总数', value: '1,286', icon: 'el-icon-user', color: '#1890ff', trend: 12 },
-        { title: '访问量', value: '28,456', icon: 'el-icon-view', color: '#52c41a', trend: 8 },
-        { title: '订单数', value: '1,024', icon: 'el-icon-s-order', color: '#faad14', trend: -3 },
-        { title: '收入(元)', value: '¥ 86,400', icon: 'el-icon-money', color: '#f5222d', trend: 15 }
+        { key: 'users', title: '用户总数', value: '--', icon: 'el-icon-user', color: '#1890ff' },
+        { key: 'online', title: '在线人数', value: '--', icon: 'el-icon-connection', color: '#13c2c2' },
+        { key: 'todayVisits', title: '当天访问量', value: '--', icon: 'el-icon-data-line', color: '#faad14' },
+        { key: 'visits', title: '总访问量', value: '--', icon: 'el-icon-view', color: '#52c41a' }
       ],
       quickActions: [
         { icon: 'el-icon-user', text: '用户管理', color: '#1890ff', path: '/system/user' },
@@ -152,19 +155,40 @@ export default {
         { text: '系统完成了数据备份', time: '2小时前', color: '#13c2c2' },
         { text: '清除了过期的缓存数据', time: '3小时前', color: '#722ed1' }
       ],
-      systemInfo: [
-        { label: '系统版本', value: 'v2.0.0' },
-        { label: 'Spring Boot', value: '2.5.6' },
-        { label: 'Vue 版本', value: '2.6.12' },
-        { label: 'Element UI', value: '2.15.14' },
-        { label: 'Java 版本', value: 'JDK 8' },
-        { label: '数据库', value: 'MySQL 5.7' },
-        { label: '缓存', value: 'Redis 6.x' },
-        { label: '运行时间', value: '15天 8小时' }
-      ]
+      systemInfo: []
     }
   },
   methods: {
+    getStats() {
+      getDashboardStats().then((response) => {
+        const data = response.data
+        const setValue = (key, value) => {
+          const card = this.statCards.find((item) => item.key === key)
+          if (card) card.value = (value || 0).toLocaleString()
+        }
+        setValue('users', data.userTotal)
+        setValue('online', data.onlineTotal)
+        setValue('todayVisits', data.todayVisitTotal)
+        setValue('visits', data.visitTotal)
+      }).catch(() => {})
+    },
+    getSystemInfo() {
+      getDashboardInfo().then((response) => {
+        const data = response.data
+        this.systemInfo = [
+          { label: '系统版本', value: data.luckyVersion ? 'v' + data.luckyVersion : packageInfo.version },
+          { label: 'Spring Boot', value: data.springBootVersion },
+          { label: 'Vue 版本', value: packageInfo.dependencies.vue },
+          { label: 'Element UI', value: packageInfo.dependencies['element-ui'] },
+          { label: 'Java 版本', value: data.javaVersion },
+          { label: '操作系统', value: (data.osName || '') + ' ' + (data.osArch || '') },
+          { label: '数据库', value: data.mysqlVersion ? 'MySQL ' + data.mysqlVersion : '' },
+          { label: '缓存', value: data.redisVersion ? 'Redis ' + data.redisVersion : '' },
+          { label: '启动时间', value: data.startTime },
+          { label: '运行时间', value: data.runTime }
+        ]
+      })
+    },
     handleAction(action) {
       if (action.path) {
         this.$router.push(action.path)
@@ -350,6 +374,15 @@ export default {
 
 .card-more {
   font-size: 13px;
+}
+
+.no-permission {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: #bfbfbf;
+  font-size: 14px;
 }
 
 // 快捷操作
