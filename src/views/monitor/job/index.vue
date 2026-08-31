@@ -102,6 +102,7 @@
       </el-table-column>
       <el-table-column label="调用目标字符串" align="center" prop="invokeTarget" :show-overflow-tooltip="true" />
       <el-table-column label="cron执行表达式" align="center" prop="cronExpression" :show-overflow-tooltip="true" />
+      <el-table-column label="描述" align="center" prop="remark" :show-overflow-tooltip="true" />
       <el-table-column label="状态" align="center">
         <template slot-scope="scope">
           <el-switch
@@ -200,6 +201,18 @@
               </el-input>
             </el-form-item>
           </el-col>
+          <el-col :span="24">
+            <el-form-item label="描述">
+              <el-input
+                v-model="form.remark"
+                type="textarea"
+                :rows="3"
+                placeholder="请输入任务描述"
+                maxlength="500"
+                show-word-limit
+              />
+            </el-form-item>
+          </el-col>
           <el-col :span="24" v-if="form.jobId !== undefined">
             <el-form-item label="状态">
               <el-radio-group v-model="form.status">
@@ -257,6 +270,9 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="下次执行时间：">{{ parseTime(form.nextValidTime) }}</el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="描述：">{{ form.remark }}</el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="调用目标方法：">{{ form.invokeTarget }}</el-form-item>
@@ -378,6 +394,7 @@ export default {
         jobGroup: undefined,
         invokeTarget: undefined,
         cronExpression: undefined,
+        remark: undefined,
         misfirePolicy: 1,
         concurrent: 1,
         status: "0"

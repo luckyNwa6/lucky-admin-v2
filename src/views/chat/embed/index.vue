@@ -1,0 +1,208 @@
+<template>
+  <div class="app-container">
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch">
+      <el-form-item label="嵌入名称" prop="name">
+        <el-input v-model="queryParams.name" placeholder="请输入嵌入名称" clearable @keyup.enter.native="handleQuery" />
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+      </el-form-item>
+    </el-form>
+
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd" v-hasPermi="['ai:chat:embedConfig:add']">新增</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button type="success" plain icon="el-icon-edit" size="mini" :disabled="single" @click="handleUpdate" v-hasPermi="['ai:chat:embedConfig:edit']">修改</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete" v-hasPermi="['ai:chat:embedConfig:remove']">删除</el-button>
+      </el-col>
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+    </el-row>
+
+    <el-table v-loading="loading" :data="list" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column label="嵌入名称" align="center" prop="name" min-width="130" :show-overflow-tooltip="true" />
+      <el-table-column label="API Key" align="center" min-width="160" :show-overflow-tooltip="true">
+        <template slot-scope="scope">{{ maskKey(scope.row.api_key) }}</template>
+      </el-table-column>
+      <el-table-column label="状态" align="center" width="90">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.is_active ? 'success' : 'info'">{{ scope.row.is_active ? '启用' : '停用' }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="欢迎语" align="center" prop="welcome_message" min-width="160" :show-overflow-tooltip="true" />
+      <el-table-column label="主题色" align="center" width="90">
+        <template slot-scope="scope">
+          <span class="color-dot" :style="{ background: scope.row.theme_color || '#409EFF' }"></span>
+        </template>
+      </el-table-column>
+      <el-table-column label="域名白名单" align="center" prop="allowed_origins" min-width="180" :show-overflow-tooltip="true" />
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <template slot-scope="scope">
+          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['ai:chat:embedConfig:edit']">修改</el-button>
+          <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)" v-hasPermi="['ai:chat:embedConfig:remove']">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize" @pagination="getList" />
+
+    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="110px">
+        <el-form-item label="嵌入名称" prop="name">
+          <el-input v-model="form.name" placeholder="请输入嵌入名称" />
+        </el-form-item>
+        <el-form-item label="API Key" prop="apiKey">
+          <el-input v-model="form.apiKey" placeholder="请输入嵌入小部件 API Key" :disabled="!!form.id" show-password />
+        </el-form-item>
+        <el-form-item label="状态" prop="isActive">
+          <el-switch v-model="form.isActive" />
+        </el-form-item>
+        <el-form-item label="欢迎语" prop="welcomeMessage">
+          <el-input v-model="form.welcomeMessage" type="textarea" :rows="2" placeholder="请输入欢迎语" />
+        </el-form-item>
+        <el-form-item label="主题色" prop="themeColor">
+          <el-color-picker v-model="form.themeColor" />
+        </el-form-item>
+        <el-form-item label="域名白名单" prop="allowedOrigins">
+          <el-input v-model="form.allowedOrigins" type="textarea" :rows="2" placeholder='JSON 数组，如 ["blog.luckynwa.top"]' />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { listEmbed, getEmbed, addEmbed, updateEmbed, delEmbed } from '@/api/chat'
+
+export default {
+  name: 'ChatEmbed',
+  data() {
+    return {
+      loading: false,
+      showSearch: true,
+      list: [],
+      total: 0,
+      ids: [],
+      single: true,
+      multiple: true,
+      open: false,
+      title: '',
+      queryParams: { pageNum: 1, pageSize: 10, name: undefined },
+      form: {},
+      rules: {
+        name: [{ required: true, message: '嵌入名称不能为空', trigger: 'blur' }],
+        apiKey: [{ required: true, message: 'API Key 不能为空', trigger: 'blur' }]
+      }
+    }
+  },
+  created() {
+    this.getList()
+  },
+  methods: {
+    maskKey(key) {
+      if (!key) return ''
+      return key.length > 12 ? key.slice(0, 8) + '****' + key.slice(-4) : '****'
+    },
+    getList() {
+      this.loading = true
+      listEmbed(this.queryParams).then(response => {
+        this.list = response.rows
+        this.total = response.total
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
+    },
+    handleQuery() {
+      this.queryParams.pageNum = 1
+      this.getList()
+    },
+    resetQuery() {
+      this.resetForm('queryForm')
+      this.handleQuery()
+    },
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.id)
+      this.single = selection.length !== 1
+      this.multiple = !selection.length
+    },
+    reset() {
+      this.form = { isActive: true, themeColor: '#409EFF' }
+    },
+    handleAdd() {
+      this.reset()
+      this.open = true
+      this.title = '新增嵌入配置'
+    },
+    handleUpdate(row) {
+      this.reset()
+      const id = row.id || this.ids[0]
+      getEmbed(id).then(response => {
+        this.form = response.data
+        this.form.apiKey = ''
+        this.open = true
+        this.title = '修改嵌入配置'
+      })
+    },
+    submitForm() {
+      this.$refs['form'].validate(valid => {
+        if (valid) {
+          const data = { ...this.form }
+          try {
+            if (data.allowedOrigins && typeof data.allowedOrigins === 'string' && !data.allowedOrigins.startsWith('[')) {
+              data.allowedOrigins = JSON.stringify(data.allowedOrigins.split(',').map(s => s.trim()).filter(Boolean))
+            }
+          } catch (e) {
+            /* ignore */
+          }
+          if (this.form.id) {
+            updateEmbed(data).then(() => {
+              this.$modal.msgSuccess('修改成功')
+              this.open = false
+              this.getList()
+            })
+          } else {
+            addEmbed(data).then(() => {
+              this.$modal.msgSuccess('新增成功')
+              this.open = false
+              this.getList()
+            })
+          }
+        }
+      })
+    },
+    handleDelete(row) {
+      const ids = row.id || this.ids.join(',')
+      this.$modal.confirm('是否确认删除选中的嵌入配置？').then(() => {
+        return delEmbed(ids)
+      }).then(() => {
+        this.getList()
+        this.$modal.msgSuccess('删除成功')
+      }).catch(() => {})
+    },
+    cancel() {
+      this.open = false
+      this.reset()
+    }
+  }
+}
+</script>
+
+<style scoped>
+.color-dot {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+</style>
