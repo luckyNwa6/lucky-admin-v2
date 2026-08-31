@@ -27,22 +27,25 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="嵌入名称" align="center" prop="name" min-width="130" :show-overflow-tooltip="true" />
       <el-table-column label="API Key" align="center" min-width="160" :show-overflow-tooltip="true">
-        <template slot-scope="scope">{{ maskKey(scope.row.api_key) }}</template>
+        <template slot-scope="scope">
+          <span class="api-key-text">{{ scope.row.apiKey }}</span>
+        </template>
       </el-table-column>
       <el-table-column label="状态" align="center" width="90">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.is_active ? 'success' : 'info'">{{ scope.row.is_active ? '启用' : '停用' }}</el-tag>
+          <el-tag :type="scope.row.isActive ? 'success' : 'info'">{{ scope.row.isActive ? '启用' : '停用' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="欢迎语" align="center" prop="welcome_message" min-width="160" :show-overflow-tooltip="true" />
+      <el-table-column label="欢迎语" align="center" prop="welcomeMessage" min-width="160" :show-overflow-tooltip="true" />
       <el-table-column label="主题色" align="center" width="90">
         <template slot-scope="scope">
-          <span class="color-dot" :style="{ background: scope.row.theme_color || '#409EFF' }"></span>
+          <span class="color-dot" :style="{ background: scope.row.themeColor || '#409EFF' }"></span>
         </template>
       </el-table-column>
-      <el-table-column label="域名白名单" align="center" prop="allowed_origins" min-width="180" :show-overflow-tooltip="true" />
+      <el-table-column label="域名白名单" align="center" prop="allowedOrigins" min-width="180" :show-overflow-tooltip="true" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
+          <el-button size="mini" type="text" icon="el-icon-link" @click="handleShowCode(scope.row)" v-hasPermi="['ai:chat:embedConfig:query']">嵌入代码</el-button>
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['ai:chat:embedConfig:edit']">修改</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)" v-hasPermi="['ai:chat:embedConfig:remove']">删除</el-button>
         </template>
@@ -57,7 +60,7 @@
           <el-input v-model="form.name" placeholder="请输入嵌入名称" />
         </el-form-item>
         <el-form-item label="API Key" prop="apiKey">
-          <el-input v-model="form.apiKey" placeholder="请输入嵌入小部件 API Key" :disabled="!!form.id" show-password />
+          <el-input v-model="form.apiKey" placeholder="请输入嵌入小部件 API Key" show-password />
         </el-form-item>
         <el-form-item label="状态" prop="isActive">
           <el-switch v-model="form.isActive" />
@@ -75,6 +78,20 @@
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog title="嵌入代码" :visible.sync="codeDialogVisible" width="650px" append-to-body>
+      <div class="code-tip">
+        <p>将以下代码添加到您网站的 <code>&lt;body&gt;</code> 标签前：</p>
+      </div>
+      <el-input v-model="embedCode" type="textarea" :rows="4" readonly style="font-family: monospace;" />
+      <div class="code-hint">
+        <p>用户访问您的网站时，右下角会显示聊天气泡，点击即可开始对话。</p>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="codeDialogVisible = false">关闭</el-button>
+        <el-button type="primary" @click="copyEmbedCode">复制代码</el-button>
       </div>
     </el-dialog>
   </div>
@@ -96,6 +113,8 @@ export default {
       multiple: true,
       open: false,
       title: '',
+      codeDialogVisible: false,
+      embedCode: '',
       queryParams: { pageNum: 1, pageSize: 10, name: undefined },
       form: {},
       rules: {
@@ -108,10 +127,6 @@ export default {
     this.getList()
   },
   methods: {
-    maskKey(key) {
-      if (!key) return ''
-      return key.length > 12 ? key.slice(0, 8) + '****' + key.slice(-4) : '****'
-    },
     getList() {
       this.loading = true
       listEmbed(this.queryParams).then(response => {
@@ -148,7 +163,6 @@ export default {
       const id = row.id || this.ids[0]
       getEmbed(id).then(response => {
         this.form = response.data
-        this.form.apiKey = ''
         this.open = true
         this.title = '修改嵌入配置'
       })
@@ -189,6 +203,16 @@ export default {
         this.$modal.msgSuccess('删除成功')
       }).catch(() => {})
     },
+    handleShowCode(row) {
+      const params = new URLSearchParams({ api_key: row.apiKey })
+      this.embedCode = `<script src="https://rag.luckynwa.top/widget.js?${params.toString()}"><\/script>`
+      this.codeDialogVisible = true
+    },
+    copyEmbedCode() {
+      navigator.clipboard.writeText(this.embedCode).then(() => {
+        this.$modal.msgSuccess('嵌入代码已复制到剪贴板')
+      })
+    },
     cancel() {
       this.open = false
       this.reset()
@@ -204,5 +228,9 @@ export default {
   height: 18px;
   border-radius: 50%;
   vertical-align: middle;
+}
+.api-key-text {
+  font-family: monospace;
+  word-break: break-all;
 }
 </style>

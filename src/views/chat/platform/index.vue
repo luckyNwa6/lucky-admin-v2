@@ -40,7 +40,7 @@
       </el-table-column>
       <el-table-column label="排序" align="center" prop="sort" width="70" />
       <el-table-column label="备注" align="center" prop="remark" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="创建时间" align="center" prop="created_at" width="170" />
+      <el-table-column label="创建时间" align="center" prop="createdAt" width="170" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['ai:chat:platform:edit']">修改</el-button>

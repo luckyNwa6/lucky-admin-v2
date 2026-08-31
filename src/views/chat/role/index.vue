@@ -38,11 +38,11 @@
       </el-table-column>
       <el-table-column label="公开" align="center" width="80">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.is_public ? 'primary' : 'info'" size="mini">{{ scope.row.is_public ? '是' : '否' }}</el-tag>
+          <el-tag :type="scope.row.isPublic ? 'primary' : 'info'" size="mini">{{ scope.row.isPublic ? '是' : '否' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="排序" align="center" prop="sort" width="70" />
-      <el-table-column label="创建时间" align="center" prop="created_at" width="170" />
+      <el-table-column label="创建时间" align="center" prop="createdAt" width="170" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['ai:chat:chatRole:edit']">修改</el-button>
@@ -104,16 +104,6 @@
           <el-col :span="24">
             <el-form-item label="系统提示词" prop="systemPrompt">
               <el-input v-model="form.systemPrompt" type="textarea" :rows="4" placeholder="请输入系统提示词" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="知识库" prop="knowledgeBases">
-              <el-input v-model="form.knowledgeBases" type="textarea" :rows="2" placeholder='JSON 数组，如 ["docs/ai"]' />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="工具" prop="tools">
-              <el-input v-model="form.tools" type="textarea" :rows="2" placeholder='JSON 数组，如 ["web_search"]' />
             </el-form-item>
           </el-col>
         </el-row>
@@ -200,16 +190,6 @@ export default {
       this.$refs['form'].validate(valid => {
         if (valid) {
           const data = { ...this.form }
-          try {
-            if (data.knowledgeBases && typeof data.knowledgeBases === 'string' && !data.knowledgeBases.startsWith('[')) {
-              data.knowledgeBases = JSON.stringify(data.knowledgeBases.split(',').map(s => s.trim()).filter(Boolean))
-            }
-            if (data.tools && typeof data.tools === 'string' && !data.tools.startsWith('[')) {
-              data.tools = JSON.stringify(data.tools.split(',').map(s => s.trim()).filter(Boolean))
-            }
-          } catch (e) {
-            /* ignore */
-          }
           if (this.form.id) {
             updateRole(data).then(() => {
               this.$modal.msgSuccess('修改成功')

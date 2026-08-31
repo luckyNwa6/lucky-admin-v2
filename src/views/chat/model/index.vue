@@ -9,6 +9,11 @@
           <el-option v-for="item in platformOptions" :key="item.code" :label="item.name" :value="item.code" />
         </el-select>
       </el-form-item>
+      <el-form-item label="类型" prop="modelType">
+        <el-select v-model="queryParams.modelType" placeholder="请选择类型" clearable>
+          <el-option v-for="item in modelTypes" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
           <el-option label="启用" value="active" />
@@ -37,8 +42,10 @@
     <el-table v-loading="loading" :data="list" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="名称" align="center" prop="name" min-width="130" :show-overflow-tooltip="true" />
-      <el-table-column label="模型ID" align="center" prop="model_id" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="类型" align="center" prop="model_type" width="110" />
+      <el-table-column label="模型ID" align="center" prop="modelId" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="类型" align="center" width="110">
+        <template slot-scope="scope">{{ modelTypeLabel(scope.row.modelType) }}</template>
+      </el-table-column>
       <el-table-column label="平台" align="center" prop="platform" width="100" />
       <el-table-column label="状态" align="center" width="90">
         <template slot-scope="scope">
@@ -46,12 +53,12 @@
         </template>
       </el-table-column>
       <el-table-column label="次数额度" align="center" width="110">
-        <template slot-scope="scope">{{ scope.row.quota_total === null ? '不限' : scope.row.quota_used + '/' + scope.row.quota_total }}</template>
+        <template slot-scope="scope">{{ scope.row.quotaTotal === null ? '不限' : scope.row.quotaUsed + '/' + scope.row.quotaTotal }}</template>
       </el-table-column>
       <el-table-column label="Token额度" align="center" width="130">
-        <template slot-scope="scope">{{ scope.row.token_quota_total === null ? '不限' : scope.row.token_quota_used + '/' + scope.row.token_quota_total }}</template>
+        <template slot-scope="scope">{{ scope.row.tokenQuotaTotal === null ? '不限' : scope.row.tokenQuotaUsed + '/' + scope.row.tokenQuotaTotal }}</template>
       </el-table-column>
-      <el-table-column label="过期时间" align="center" prop="expires_at" width="170" />
+      <el-table-column label="过期时间" align="center" prop="expiresAt" width="170" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['ai:chat:modelConfig:edit']">修改</el-button>
@@ -101,11 +108,6 @@
               <el-select v-model="form.roleId" placeholder="请选择角色" clearable filterable>
                 <el-option v-for="item in roleOptions" :key="item.id" :label="item.name" :value="item.id" />
               </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="Base URL" prop="baseUrl">
-              <el-input v-model="form.baseUrl" placeholder="可选，默认使用平台地址" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -192,7 +194,7 @@ export default {
         { label: '语音', value: 'speech' },
         { label: '向量', value: 'embedding' }
       ],
-      queryParams: { pageNum: 1, pageSize: 10, name: undefined, platform: undefined, status: undefined },
+      queryParams: { pageNum: 1, pageSize: 10, name: undefined, platform: undefined, modelType: undefined, status: undefined },
       form: {},
       rules: {
         name: [{ required: true, message: '配置名称不能为空', trigger: 'blur' }],
@@ -220,6 +222,10 @@ export default {
       listPlatform({ pageNum: 1, pageSize: 100 }).then(res => { this.platformOptions = res.rows || [] })
       listApiKey({ pageNum: 1, pageSize: 100 }).then(res => { this.apiKeyOptions = res.rows || [] })
       listRole({ pageNum: 1, pageSize: 100 }).then(res => { this.roleOptions = res.rows || [] })
+    },
+    modelTypeLabel(type) {
+      const item = this.modelTypes.find(t => t.value === type)
+      return item ? item.label : type
     },
     handleQuery() {
       this.queryParams.pageNum = 1

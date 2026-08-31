@@ -39,9 +39,11 @@
       <el-table-column label="名称" align="center" prop="name" min-width="130" :show-overflow-tooltip="true" />
       <el-table-column label="平台" align="center" prop="platform" width="110" />
       <el-table-column label="API 密钥" align="center" min-width="180" :show-overflow-tooltip="true">
-        <template slot-scope="scope">{{ maskKey(scope.row.api_key) }}</template>
+        <template slot-scope="scope">
+          <span class="api-key-text">{{ scope.row.apiKey }}</span>
+        </template>
       </el-table-column>
-      <el-table-column label="Base URL" align="center" prop="base_url" min-width="160" :show-overflow-tooltip="true" />
+      <el-table-column label="Base URL" align="center" prop="baseUrl" min-width="160" :show-overflow-tooltip="true" />
       <el-table-column label="状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status === 'active' ? 'success' : 'info'">{{ scope.row.status === 'active' ? '启用' : '停用' }}</el-tag>
@@ -70,7 +72,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="API 密钥" prop="apiKey">
-          <el-input v-model="form.apiKey" placeholder="请输入完整 API 密钥" :disabled="!!form.id" show-password />
+          <el-input v-model="form.apiKey" placeholder="请输入完整 API 密钥" show-password />
         </el-form-item>
         <el-form-item label="Base URL" prop="baseUrl">
           <el-input v-model="form.baseUrl" placeholder="可选，默认使用平台地址" />
@@ -127,10 +129,6 @@ export default {
     listPlatform({ pageNum: 1, pageSize: 100 }).then(res => { this.platformOptions = res.rows || [] })
   },
   methods: {
-    maskKey(key) {
-      if (!key) return ''
-      return key.length > 12 ? key.slice(0, 8) + '****' + key.slice(-4) : '****'
-    },
     getList() {
       this.loading = true
       listApiKey(this.queryParams).then(response => {
@@ -167,7 +165,6 @@ export default {
       const id = row.id || this.ids[0]
       getApiKey(id).then(response => {
         this.form = response.data
-        this.form.apiKey = ''
         this.open = true
         this.title = '修改 API 密钥'
       })
@@ -208,3 +205,10 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.api-key-text {
+  font-family: monospace;
+  word-break: break-all;
+}
+</style>
