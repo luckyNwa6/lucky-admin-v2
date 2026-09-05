@@ -2,10 +2,10 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch">
       <el-form-item label="平台名称" prop="name">
-        <el-input v-model="queryParams.name" placeholder="请输入平台名称" clearable @keyup.enter.native="handleQuery" />
+        <el-input v-model="queryParams.name" placeholder="请输入平台名称" clearable style="width: 240px" @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
+        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable style="width: 240px">
           <el-option label="启用" value="active" />
           <el-option label="停用" value="disabled" />
         </el-select>
@@ -31,17 +31,21 @@
 
     <el-table v-loading="loading" :data="list" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="平台名称" align="center" prop="name" min-width="130" :show-overflow-tooltip="true" />
-      <el-table-column label="平台标识" align="center" prop="code" min-width="110" />
+      <el-table-column label="平台名称" prop="name" min-width="130" :show-overflow-tooltip="true" />
+      <el-table-column label="平台标识" prop="code" min-width="110" />
       <el-table-column label="状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status === 'active' ? 'success' : 'info'">{{ scope.row.status === 'active' ? '启用' : '停用' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="排序" align="center" prop="sort" width="70" />
-      <el-table-column label="备注" align="center" prop="remark" min-width="150" :show-overflow-tooltip="true" />
-      <el-table-column label="创建时间" align="center" prop="createdAt" width="170" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="排序" prop="sort" width="70" />
+      <el-table-column label="备注" prop="remark" min-width="150" :show-overflow-tooltip="true" />
+      <el-table-column label="创建时间" align="center" prop="createdAt" width="170">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createdAt) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['ai:chat:platform:edit']">修改</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)" v-hasPermi="['ai:chat:platform:remove']">删除</el-button>

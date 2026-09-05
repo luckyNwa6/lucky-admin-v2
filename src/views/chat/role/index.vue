@@ -2,10 +2,10 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch">
       <el-form-item label="角色名称" prop="name">
-        <el-input v-model="queryParams.name" placeholder="请输入角色名称" clearable @keyup.enter.native="handleQuery" />
+        <el-input v-model="queryParams.name" placeholder="请输入角色名称" clearable style="width: 240px" @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="分类" prop="category">
-        <el-input v-model="queryParams.category" placeholder="请输入分类" clearable @keyup.enter.native="handleQuery" />
+        <el-input v-model="queryParams.category" placeholder="请输入分类" clearable style="width: 240px" @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -28,9 +28,9 @@
 
     <el-table v-loading="loading" :data="list" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="角色名称" align="center" prop="name" min-width="120" :show-overflow-tooltip="true" />
-      <el-table-column label="分类" align="center" prop="category" width="110" />
-      <el-table-column label="描述" align="center" prop="description" min-width="180" :show-overflow-tooltip="true" />
+      <el-table-column label="角色名称" prop="name" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="分类" prop="category" width="110" />
+      <el-table-column label="描述" prop="description" min-width="180" :show-overflow-tooltip="true" />
       <el-table-column label="状态" align="center" width="90">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status === 'active' ? 'success' : 'info'">{{ scope.row.status === 'active' ? '启用' : '停用' }}</el-tag>
@@ -41,9 +41,13 @@
           <el-tag :type="scope.row.isPublic ? 'primary' : 'info'" size="mini">{{ scope.row.isPublic ? '是' : '否' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="排序" align="center" prop="sort" width="70" />
-      <el-table-column label="创建时间" align="center" prop="createdAt" width="170" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="排序" prop="sort" width="70" />
+      <el-table-column label="创建时间" align="center" prop="createdAt" width="170">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createdAt) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['ai:chat:chatRole:edit']">修改</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)" v-hasPermi="['ai:chat:chatRole:remove']">删除</el-button>
@@ -175,7 +179,7 @@ export default {
     handleAdd() {
       this.reset()
       this.open = true
-      this.title = '新增聊天角色'
+      this.title = '新增角色'
     },
     handleUpdate(row) {
       this.reset()
@@ -183,7 +187,7 @@ export default {
       getRole(id).then(response => {
         this.form = response.data
         this.open = true
-        this.title = '修改聊天角色'
+        this.title = '修改角色'
       })
     },
     submitForm() {
@@ -208,7 +212,7 @@ export default {
     },
     handleDelete(row) {
       const ids = row.id || this.ids.join(',')
-      this.$modal.confirm('是否确认删除选中的聊天角色？').then(() => {
+      this.$modal.confirm('是否确认删除选中的角色？').then(() => {
         return delRole(ids)
       }).then(() => {
         this.getList()

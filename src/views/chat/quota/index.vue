@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch">
       <el-form-item label="角色" prop="keyword">
-        <el-input v-model="queryParams.keyword" placeholder="搜索角色（如 common）" clearable @keyup.enter.native="handleQuery" />
+        <el-input v-model="queryParams.keyword" placeholder="搜索角色（如 common）" clearable style="width: 240px" @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -59,7 +59,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="140">
         <template slot-scope="scope">
-          <el-button type="warning" size="mini" icon="el-icon-refresh-left" @click="handleReset(scope.row)" v-hasPermi="['ai:chat:quota:edit']">重置今日</el-button>
+          <el-button size="mini" type="text" icon="el-icon-refresh-left" @click="handleReset(scope.row)" v-hasPermi="['ai:chat:quota:edit']">重置今日</el-button>
         </template>
       </el-table-column>
     </el-table>

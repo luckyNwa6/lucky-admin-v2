@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch">
       <el-form-item label="标题" prop="keyword">
-        <el-input v-model="queryParams.keyword" placeholder="请输入会话标题" clearable @keyup.enter.native="handleQuery" />
+        <el-input v-model="queryParams.keyword" placeholder="请输入会话标题" clearable style="width: 240px" @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -22,12 +22,16 @@
 
     <el-table v-loading="loading" :data="list" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="标题" align="center" prop="title" min-width="220" :show-overflow-tooltip="true" />
-      <el-table-column label="用户" align="center" prop="username" width="120" :show-overflow-tooltip="true" />
-      <el-table-column label="消息数" align="center" prop="message_count" width="90" />
-      <el-table-column label="模型配置" align="center" prop="model_config_id" width="220" :show-overflow-tooltip="true" />
-      <el-table-column label="更新时间" align="center" prop="updated_at" width="170" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="标题" prop="title" min-width="220" :show-overflow-tooltip="true" />
+      <el-table-column label="用户" prop="username" width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="消息数" prop="message_count" width="90" />
+      <el-table-column label="模型配置" prop="model_config_id" width="220" :show-overflow-tooltip="true" />
+      <el-table-column label="更新时间" align="center" prop="updated_at" width="170">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.updated_at) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-view" @click="handleView(scope.row)" v-hasPermi="['ai:chat:session:query']">详情</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)" v-hasPermi="['ai:chat:session:remove']">删除</el-button>

@@ -2,7 +2,13 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch">
       <el-form-item label="嵌入名称" prop="name">
-        <el-input v-model="queryParams.name" placeholder="请输入嵌入名称" clearable @keyup.enter.native="handleQuery" />
+        <el-input
+          v-model="queryParams.name"
+          placeholder="请输入嵌入名称"
+          clearable
+          style="width: 240px"
+          @keyup.enter.native="handleQuery"
+        />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -12,21 +18,43 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd" v-hasPermi="['ai:chat:embedConfig:add']">新增</el-button>
+        <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd" v-hasPermi="['ai:chat:embedConfig:add']">
+          新增
+        </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="success" plain icon="el-icon-edit" size="mini" :disabled="single" @click="handleUpdate" v-hasPermi="['ai:chat:embedConfig:edit']">修改</el-button>
+        <el-button
+          type="success"
+          plain
+          icon="el-icon-edit"
+          size="mini"
+          :disabled="single"
+          @click="handleUpdate"
+          v-hasPermi="['ai:chat:embedConfig:edit']"
+        >
+          修改
+        </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete" v-hasPermi="['ai:chat:embedConfig:remove']">删除</el-button>
+        <el-button
+          type="danger"
+          plain
+          icon="el-icon-delete"
+          size="mini"
+          :disabled="multiple"
+          @click="handleDelete"
+          v-hasPermi="['ai:chat:embedConfig:remove']"
+        >
+          删除
+        </el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="list" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="嵌入名称" align="center" prop="name" min-width="130" :show-overflow-tooltip="true" />
-      <el-table-column label="API Key" align="center" min-width="160" :show-overflow-tooltip="true">
+      <el-table-column label="嵌入名称" prop="name" min-width="130" :show-overflow-tooltip="true" />
+      <el-table-column label="API Key" min-width="130" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span class="api-key-text">{{ scope.row.apiKey }}</span>
         </template>
@@ -36,23 +64,52 @@
           <el-tag :type="scope.row.isActive ? 'success' : 'info'">{{ scope.row.isActive ? '启用' : '停用' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="欢迎语" align="center" prop="welcomeMessage" min-width="160" :show-overflow-tooltip="true" />
-      <el-table-column label="主题色" align="center" width="90">
+      <el-table-column label="创建时间" align="center" width="180">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createdAt) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="欢迎语" prop="welcomeMessage" min-width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="主题色" width="90">
         <template slot-scope="scope">
           <span class="color-dot" :style="{ background: scope.row.themeColor || '#409EFF' }"></span>
         </template>
       </el-table-column>
-      <el-table-column label="域名白名单" align="center" prop="allowedOrigins" min-width="180" :show-overflow-tooltip="true" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="域名白名单" prop="allowedOrigins" min-width="180" :show-overflow-tooltip="true" />
+      <el-table-column label="操作" align="center" width="220" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" icon="el-icon-link" @click="handleShowCode(scope.row)" v-hasPermi="['ai:chat:embedConfig:query']">嵌入代码</el-button>
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['ai:chat:embedConfig:edit']">修改</el-button>
-          <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)" v-hasPermi="['ai:chat:embedConfig:remove']">删除</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-link"
+            @click="handleShowCode(scope.row)"
+            v-hasPermi="['ai:chat:embedConfig:query']"
+          >
+            嵌入代码
+          </el-button>
+          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['ai:chat:embedConfig:edit']">
+            修改
+          </el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-delete"
+            @click="handleDelete(scope.row)"
+            v-hasPermi="['ai:chat:embedConfig:remove']"
+          >
+            删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize" @pagination="getList" />
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="queryParams.pageNum"
+      :limit.sync="queryParams.pageSize"
+      @pagination="getList"
+    />
 
     <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="110px">
@@ -83,9 +140,13 @@
 
     <el-dialog title="嵌入代码" :visible.sync="codeDialogVisible" width="650px" append-to-body>
       <div class="code-tip">
-        <p>将以下代码添加到您网站的 <code>&lt;body&gt;</code> 标签前：</p>
+        <p>
+          将以下代码添加到您网站的
+          <code>&lt;body&gt;</code>
+          标签前：
+        </p>
       </div>
-      <el-input v-model="embedCode" type="textarea" :rows="4" readonly style="font-family: monospace;" />
+      <el-input v-model="embedCode" type="textarea" :rows="4" readonly style="font-family: monospace" />
       <div class="code-hint">
         <p>用户访问您的网站时，右下角会显示聊天气泡，点击即可开始对话。</p>
       </div>
@@ -119,8 +180,8 @@ export default {
       form: {},
       rules: {
         name: [{ required: true, message: '嵌入名称不能为空', trigger: 'blur' }],
-        apiKey: [{ required: true, message: 'API Key 不能为空', trigger: 'blur' }]
-      }
+        apiKey: [{ required: true, message: 'API Key 不能为空', trigger: 'blur' }],
+      },
     }
   },
   created() {
@@ -129,13 +190,15 @@ export default {
   methods: {
     getList() {
       this.loading = true
-      listEmbed(this.queryParams).then(response => {
-        this.list = response.rows
-        this.total = response.total
-        this.loading = false
-      }).catch(() => {
-        this.loading = false
-      })
+      listEmbed(this.queryParams)
+        .then((response) => {
+          this.list = response.rows
+          this.total = response.total
+          this.loading = false
+        })
+        .catch(() => {
+          this.loading = false
+        })
     },
     handleQuery() {
       this.queryParams.pageNum = 1
@@ -146,7 +209,7 @@ export default {
       this.handleQuery()
     },
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.id)
+      this.ids = selection.map((item) => item.id)
       this.single = selection.length !== 1
       this.multiple = !selection.length
     },
@@ -161,19 +224,24 @@ export default {
     handleUpdate(row) {
       this.reset()
       const id = row.id || this.ids[0]
-      getEmbed(id).then(response => {
+      getEmbed(id).then((response) => {
         this.form = response.data
         this.open = true
         this.title = '修改嵌入配置'
       })
     },
     submitForm() {
-      this.$refs['form'].validate(valid => {
+      this.$refs['form'].validate((valid) => {
         if (valid) {
           const data = { ...this.form }
           try {
             if (data.allowedOrigins && typeof data.allowedOrigins === 'string' && !data.allowedOrigins.startsWith('[')) {
-              data.allowedOrigins = JSON.stringify(data.allowedOrigins.split(',').map(s => s.trim()).filter(Boolean))
+              data.allowedOrigins = JSON.stringify(
+                data.allowedOrigins
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              )
             }
           } catch (e) {
             /* ignore */
@@ -196,12 +264,16 @@ export default {
     },
     handleDelete(row) {
       const ids = row.id || this.ids.join(',')
-      this.$modal.confirm('是否确认删除选中的嵌入配置？').then(() => {
-        return delEmbed(ids)
-      }).then(() => {
-        this.getList()
-        this.$modal.msgSuccess('删除成功')
-      }).catch(() => {})
+      this.$modal
+        .confirm('是否确认删除选中的嵌入配置？')
+        .then(() => {
+          return delEmbed(ids)
+        })
+        .then(() => {
+          this.getList()
+          this.$modal.msgSuccess('删除成功')
+        })
+        .catch(() => {})
     },
     handleShowCode(row) {
       const params = new URLSearchParams({ api_key: row.apiKey })
@@ -216,8 +288,8 @@ export default {
     cancel() {
       this.open = false
       this.reset()
-    }
-  }
+    },
+  },
 }
 </script>
 
