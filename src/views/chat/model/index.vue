@@ -69,7 +69,7 @@
 
     <el-table v-loading="loading" :data="list" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="名称" prop="name" min-width="130" :show-overflow-tooltip="true" />
+      <el-table-column label="名称" prop="name" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="模型ID" prop="modelId" min-width="150" :show-overflow-tooltip="true" />
       <el-table-column label="类型" width="110">
         <template slot-scope="scope">
@@ -77,7 +77,7 @@
         </template>
       </el-table-column>
       <el-table-column label="平台" prop="platform" width="100" />
-      <el-table-column label="状态" align="center" width="90">
+      <el-table-column label="状态" align="center" width="70">
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -87,22 +87,25 @@
           ></el-switch>
         </template>
       </el-table-column>
-      <!-- <el-table-column label="创建时间" align="center" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createdAt) }}</span>
-        </template>
-      </el-table-column> -->
       <el-table-column label="次数额度" width="110">
         <template slot-scope="scope">
           {{ scope.row.quotaTotal === null ? '不限' : scope.row.quotaUsed + '/' + scope.row.quotaTotal }}
         </template>
       </el-table-column>
-      <el-table-column label="Token额度" width="130">
+      <el-table-column label="Token额度" width="150">
         <template slot-scope="scope">
-          {{ scope.row.tokenQuotaTotal === null ? '不限' : scope.row.tokenQuotaUsed + '/' + scope.row.tokenQuotaTotal }}
+          {{
+            scope.row.tokenQuotaTotal === null
+              ? '不限'
+              : Math.max(0, scope.row.tokenQuotaTotal - (scope.row.tokenQuotaUsed || 0)) + '/' + scope.row.tokenQuotaTotal
+          }}
         </template>
       </el-table-column>
-      <el-table-column label="过期时间" prop="expiresAt" width="170" />
+      <el-table-column label="过期时间" width="120">
+        <template slot-scope="scope">
+          {{ String(scope.row.expiresAt || '').slice(0, 10) }}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['ai:chat:modelConfig:edit']">
@@ -229,28 +232,45 @@
                 </div>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
-              <el-form-item label="Token 额度" prop="tokenQuotaTotal">
-                <div class="quota-config">
+            <el-col :span="24">
+              <div class="quota-pair">
+                <el-form-item label="Token 总额度" prop="tokenQuotaTotal">
+                  <div class="quota-config">
+                    <el-input-number
+                      v-if="!tokenQuotaUnlimited"
+                      v-model="form.tokenQuotaTotal"
+                      :min="0"
+                      :step="1"
+                      controls-position="right"
+                      style="flex: 1"
+                      @change="handleTokenTotalChange"
+                    />
+                    <el-checkbox v-model="tokenQuotaUnlimited" class="quota-unlimited" @change="handleTokenUnlimitedChange">
+                      不限
+                    </el-checkbox>
+                  </div>
+                </el-form-item>
+                <el-form-item label="剩余额度">
                   <el-input-number
                     v-if="!tokenQuotaUnlimited"
-                    v-model="form.tokenQuotaTotal"
+                    v-model="tokenRemaining"
                     :min="0"
+                    :max="999999999999"
                     :step="1"
                     controls-position="right"
-                    style="flex: 1"
+                    style="width: 100%"
                   />
-                  <el-checkbox v-model="tokenQuotaUnlimited" class="quota-unlimited">不限</el-checkbox>
-                </div>
-              </el-form-item>
+                  <el-input v-else :value="'不限'" disabled />
+                </el-form-item>
+              </div>
             </el-col>
-            <el-col :span="12">
+            <el-col :span="24">
               <el-form-item label="过期时间" prop="expiresAt">
                 <el-date-picker
                   v-model="form.expiresAt"
-                  type="datetime"
-                  value-format="yyyy-MM-dd HH:mm:ss"
-                  placeholder="选择过期时间"
+                  type="date"
+                  value-format="yyyy-MM-dd"
+                  placeholder="选择过期日期"
                   style="width: 100%"
                 />
               </el-form-item>
@@ -266,6 +286,7 @@
         </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
+        <el-button v-if="form.id" type="success" plain icon="el-icon-copy-document" @click="handleCopy">复制并新建</el-button>
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
@@ -295,6 +316,7 @@ export default {
       roleOptions: [],
       quotaUnlimited: true,
       tokenQuotaUnlimited: true,
+      tokenRemaining: null,
       queryParams: { pageNum: 1, pageSize: 10, name: undefined, platform: undefined, modelType: undefined, status: undefined },
       form: {},
       rules: {
@@ -362,6 +384,7 @@ export default {
     reset() {
       this.quotaUnlimited = true
       this.tokenQuotaUnlimited = true
+      this.tokenRemaining = null
       this.form = {
         status: 'active',
         modelType: 'text',
@@ -370,7 +393,9 @@ export default {
         maxTokens: 2048,
         contextCount: 10,
         quotaTotal: null,
-        tokenQuotaTotal: null
+        quotaUsed: 0,
+        tokenQuotaTotal: null,
+        tokenQuotaUsed: 0
       }
     },
     handleAdd() {
@@ -383,49 +408,138 @@ export default {
       const id = row.id || this.ids[0]
       getModel(id).then((response) => {
         this.form = response.data
+        if (this.form.expiresAt) {
+          this.form.expiresAt = String(this.form.expiresAt).slice(0, 10)
+        }
         this.quotaUnlimited = this.form.quotaTotal === null || this.form.quotaTotal === undefined
-        this.tokenQuotaUnlimited = this.form.tokenQuotaTotal === null || this.form.tokenQuotaTotal === undefined
+        this.syncTokenRemaining()
         this.open = true
         this.title = '修改模型配置'
       })
     },
+    syncTokenRemaining() {
+      const total = this.form.tokenQuotaTotal
+      this.tokenQuotaUnlimited = total === null || total === undefined
+      if (this.tokenQuotaUnlimited) {
+        this.tokenRemaining = null
+        return
+      }
+      const used = Number(this.form.tokenQuotaUsed || 0)
+      this.tokenRemaining = Math.max(0, Number(total) - used)
+    },
+    handleTokenTotalChange() {
+      if (this.tokenQuotaUnlimited) {
+        return
+      }
+      const total = Number(this.form.tokenQuotaTotal)
+      if (!Number.isFinite(total)) {
+        return
+      }
+      const used = Number(this.form.tokenQuotaUsed || 0)
+      this.tokenRemaining = Math.max(0, total - used)
+    },
+    handleTokenUnlimitedChange(checked) {
+      if (checked) {
+        this.form.tokenQuotaTotal = null
+        this.form.tokenQuotaUsed = 0
+        this.tokenRemaining = null
+      } else {
+        if (this.form.tokenQuotaTotal === null || this.form.tokenQuotaTotal === undefined) {
+          this.form.tokenQuotaTotal = 0
+        }
+        this.syncTokenRemaining()
+      }
+    },
+    prepareData() {
+      if (!this.quotaUnlimited && (this.form.quotaTotal === null || this.form.quotaTotal === undefined || this.form.quotaTotal === '')) {
+        this.$modal.msgError('请填写次数额度或勾选不限')
+        return null
+      }
+      if (!this.tokenQuotaUnlimited) {
+        if (this.form.tokenQuotaTotal === null || this.form.tokenQuotaTotal === undefined || this.form.tokenQuotaTotal === '') {
+          this.$modal.msgError('请填写 Token 总额度或勾选不限')
+          return null
+        }
+        if (this.tokenRemaining === null || this.tokenRemaining === undefined || this.tokenRemaining === '') {
+          this.$modal.msgError('请填写 Token 剩余额度')
+          return null
+        }
+        const total = Number(this.form.tokenQuotaTotal)
+        const remaining = Number(this.tokenRemaining)
+        if (remaining > total) {
+          this.$modal.msgError('剩余额度不能大于 Token 总额度')
+          return null
+        }
+      }
+      const data = { ...this.form }
+      if (this.quotaUnlimited) {
+        data.quotaTotal = null
+        data.quotaUsed = 0
+      }
+      if (this.tokenQuotaUnlimited) {
+        data.tokenQuotaTotal = null
+        data.tokenQuotaUsed = 0
+      } else {
+        data.tokenQuotaUsed = Math.max(0, Number(data.tokenQuotaTotal) - Number(this.tokenRemaining))
+      }
+      if (data.expiresAt) {
+        data.expiresAt = String(data.expiresAt).length > 10 ? data.expiresAt : data.expiresAt + ' 00:00:00'
+      }
+      return data
+    },
+    handleCopy() {
+      if (!this.form.id) {
+        return
+      }
+      this.$refs['form'].validate((valid) => {
+        if (!valid) {
+          return
+        }
+        const data = this.prepareData()
+        if (!data) {
+          return
+        }
+        data.id = undefined
+        data.userId = undefined
+        data.quotaUsed = 0
+        data.tokenQuotaUsed = 0
+        data.createdAt = undefined
+        data.updatedAt = undefined
+        data.expiryRemindedAt = undefined
+        this.$modal
+          .confirm('确认复制当前模型配置并新建一条？')
+          .then(() => {
+            return addModel(data)
+          })
+          .then(() => {
+            this.$modal.msgSuccess('复制成功')
+            this.open = false
+            this.getList()
+          })
+          .catch(() => {})
+      })
+    },
     submitForm() {
       this.$refs['form'].validate((valid) => {
-        if (valid) {
-          if (
-            !this.quotaUnlimited &&
-            (this.form.quotaTotal === null || this.form.quotaTotal === undefined || this.form.quotaTotal === '')
-          ) {
-            this.$modal.msgError('请填写次数额度或勾选不限')
-            return
-          }
-          if (
-            !this.tokenQuotaUnlimited &&
-            (this.form.tokenQuotaTotal === null || this.form.tokenQuotaTotal === undefined || this.form.tokenQuotaTotal === '')
-          ) {
-            this.$modal.msgError('请填写 Token 额度或勾选不限')
-            return
-          }
-          const data = { ...this.form }
-          if (this.quotaUnlimited) {
-            data.quotaTotal = null
-          }
-          if (this.tokenQuotaUnlimited) {
-            data.tokenQuotaTotal = null
-          }
-          if (this.form.id) {
-            updateModel(data).then(() => {
-              this.$modal.msgSuccess('修改成功')
-              this.open = false
-              this.getList()
-            })
-          } else {
-            addModel(data).then(() => {
-              this.$modal.msgSuccess('新增成功')
-              this.open = false
-              this.getList()
-            })
-          }
+        if (!valid) {
+          return
+        }
+        const data = this.prepareData()
+        if (!data) {
+          return
+        }
+        if (this.form.id) {
+          updateModel(data).then(() => {
+            this.$modal.msgSuccess('修改成功')
+            this.open = false
+            this.getList()
+          })
+        } else {
+          addModel(data).then(() => {
+            this.$modal.msgSuccess('新增成功')
+            this.open = false
+            this.getList()
+          })
         }
       })
     },
@@ -453,6 +567,20 @@ export default {
 <style scoped>
 .model-config-form .el-form-item {
   margin-bottom: 14px;
+}
+
+.quota-pair {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.quota-pair > .el-form-item {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
 }
 
 .model-config-form .el-form-item__content .el-select,
