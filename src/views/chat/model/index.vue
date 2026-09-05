@@ -140,12 +140,18 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="次数额度" prop="quotaTotal">
-              <el-input-number v-model="form.quotaTotal" :min="0" controls-position="right" style="width: 100%" placeholder="空=不限" />
+              <div class="quota-config">
+                <el-input-number v-if="!quotaUnlimited" v-model="form.quotaTotal" :min="0" controls-position="right" style="flex: 1" />
+                <el-checkbox v-model="quotaUnlimited" class="quota-unlimited">不限</el-checkbox>
+              </div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="Token额度" prop="tokenQuotaTotal">
-              <el-input-number v-model="form.tokenQuotaTotal" :min="0" controls-position="right" style="width: 100%" placeholder="空=不限" />
+              <div class="quota-config">
+                <el-input-number v-if="!tokenQuotaUnlimited" v-model="form.tokenQuotaTotal" :min="0" controls-position="right" style="flex: 1" />
+                <el-checkbox v-model="tokenQuotaUnlimited" class="quota-unlimited">不限</el-checkbox>
+              </div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -187,6 +193,8 @@ export default {
       platformOptions: [],
       apiKeyOptions: [],
       roleOptions: [],
+      quotaUnlimited: true,
+      tokenQuotaUnlimited: true,
       modelTypes: [
         { label: '大模型', value: 'llm' },
         { label: '视觉', value: 'vision' },
@@ -241,6 +249,8 @@ export default {
       this.multiple = !selection.length
     },
     reset() {
+      this.quotaUnlimited = true
+      this.tokenQuotaUnlimited = true
       this.form = {
         status: 'active',
         modelType: 'llm',
@@ -262,6 +272,8 @@ export default {
       const id = row.id || this.ids[0]
       getModel(id).then(response => {
         this.form = response.data
+        this.quotaUnlimited = this.form.quotaTotal === null || this.form.quotaTotal === undefined
+        this.tokenQuotaUnlimited = this.form.tokenQuotaTotal === null || this.form.tokenQuotaTotal === undefined
         this.open = true
         this.title = '修改模型配置'
       })
@@ -269,14 +281,29 @@ export default {
     submitForm() {
       this.$refs['form'].validate(valid => {
         if (valid) {
+          if (!this.quotaUnlimited && (this.form.quotaTotal === null || this.form.quotaTotal === undefined || this.form.quotaTotal === '')) {
+            this.$modal.msgError('请填写次数额度或勾选不限')
+            return
+          }
+          if (!this.tokenQuotaUnlimited && (this.form.tokenQuotaTotal === null || this.form.tokenQuotaTotal === undefined || this.form.tokenQuotaTotal === '')) {
+            this.$modal.msgError('请填写 Token 额度或勾选不限')
+            return
+          }
+          const data = { ...this.form }
+          if (this.quotaUnlimited) {
+            data.quotaTotal = null
+          }
+          if (this.tokenQuotaUnlimited) {
+            data.tokenQuotaTotal = null
+          }
           if (this.form.id) {
-            updateModel(this.form).then(() => {
+            updateModel(data).then(() => {
               this.$modal.msgSuccess('修改成功')
               this.open = false
               this.getList()
             })
           } else {
-            addModel(this.form).then(() => {
+            addModel(data).then(() => {
               this.$modal.msgSuccess('新增成功')
               this.open = false
               this.getList()
@@ -301,3 +328,20 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.quota-config {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.quota-config .el-input-number {
+  flex: 1;
+}
+
+.quota-unlimited {
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+</style>
