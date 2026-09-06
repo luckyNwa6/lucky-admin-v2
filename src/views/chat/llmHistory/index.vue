@@ -22,7 +22,11 @@
       <el-table-column label="标题" prop="title" min-width="220" :show-overflow-tooltip="true" />
       <el-table-column label="用户" prop="username" width="120" :show-overflow-tooltip="true" />
       <el-table-column label="消息数" prop="message_count" width="90" />
-      <el-table-column label="模型配置" prop="model_config_id" width="220" :show-overflow-tooltip="true" />
+      <el-table-column label="模型配置" width="220" :show-overflow-tooltip="true">
+        <template slot-scope="scope">
+          <span>{{ scope.row.model_name || scope.row.model_config_id || '-' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="更新时间" align="center" prop="updated_at" width="170">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updated_at) }}</span>
@@ -53,6 +57,9 @@
           <el-descriptions-item label="提问用户">
             <el-tag type="info" size="small">{{ detail.session.username || detail.session.user_id || '未知' }}</el-tag>
           </el-descriptions-item>
+          <el-descriptions-item label="模型配置">
+            {{ detail.session.model_name || detail.session.model_config_id || '-' }}
+          </el-descriptions-item>
         </el-descriptions>
 
         <div class="history-messages">
@@ -71,6 +78,12 @@
                   </el-tag>
                   <el-tag v-if="msg.token_count" type="info" size="small" effect="plain">
                     Token {{ msg.token_count }}
+                  </el-tag>
+                  <el-tag v-if="msg.stats && msg.stats.tokens_per_second" type="success" size="small" effect="plain">
+                    {{ msg.stats.tokens_per_second }} token/s
+                  </el-tag>
+                  <el-tag v-if="msg.stats && msg.stats.elapsed_seconds" type="warning" size="small" effect="plain">
+                    总耗时 {{ formatDuration(msg.stats.elapsed_seconds) }}
                   </el-tag>
                 </div>
               </div>
@@ -149,6 +162,17 @@ export default {
         return conv.sources[0].model
       }
       return ''
+    },
+    formatDuration(seconds) {
+      const value = Number(seconds) || 0
+      if (value < 60) return (Math.round(value * 10) / 10) + ' 秒'
+      let minutes = Math.floor(value / 60)
+      let rest = Math.round(value % 60)
+      if (rest >= 60) {
+        minutes += 1
+        rest = 0
+      }
+      return minutes + ' 分 ' + rest + ' 秒'
     },
     handleDelete(row) {
       this.$modal.confirm('是否确认删除该会话？').then(() => {
