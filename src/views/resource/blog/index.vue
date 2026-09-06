@@ -19,33 +19,21 @@
           style="width: 160px; margin-right: 12px"
           @change="handleSearch"
         >
-          <el-option
-            v-for="category in categories"
-            :key="category"
-            :label="category"
-            :value="category"
-          />
+          <el-option v-for="category in categories" :key="category" :label="category" :value="category" />
         </el-select>
         <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
       </div>
       <div class="toolbar-right">
-        <el-button type="primary" icon="el-icon-refresh" :loading="syncLoading || syncRunning" @click="handleSync">
-          同步博客
-        </el-button>
-        <el-button
-          type="danger"
-          icon="el-icon-delete"
-          :disabled="selectedIds.length === 0"
-          @click="handleBatchDelete"
-        >批量删除</el-button>
+        <el-button type="primary" icon="el-icon-refresh" :loading="syncLoading || syncRunning" @click="handleSync">同步博客</el-button>
       </div>
     </div>
 
     <!-- 统计信息 -->
     <div class="stats">
-      <span>共 <strong>{{ total }}</strong> 篇博客</span>
-      <span v-if="selectedIds.length > 0" class="selected-info">
-        已选择 <strong>{{ selectedIds.length }}</strong> 篇
+      <span>
+        共
+        <strong>{{ total }}</strong>
+        篇博客
       </span>
     </div>
 
@@ -53,23 +41,19 @@
     <div v-if="syncRunning" class="sync-progress">
       <div class="sync-progress-info">
         <span>{{ syncProgress.stage || '同步中...' }}</span>
-        <span>{{ syncProgress.processed }}/{{ syncProgress.total }} · 新增 {{ syncProgress.uploaded }} · 更新 {{ syncProgress.updated }} · 删除 {{ syncProgress.deleted }} · 跳过 {{ syncProgress.skipped }} · 失败 {{ syncProgress.failed }}</span>
+        <span>
+          {{ syncProgress.processed }}/{{ syncProgress.total }} · 新增 {{ syncProgress.uploaded }} · 更新 {{ syncProgress.updated }} · 删除
+          {{ syncProgress.deleted }} · 跳过 {{ syncProgress.skipped }} · 失败 {{ syncProgress.failed }}
+        </span>
       </div>
       <el-progress :percentage="syncPercent" :stroke-width="10" />
     </div>
 
     <!-- 博客列表 -->
-    <el-table
-      :data="posts"
-      v-loading="loading"
-      border
-      @selection-change="handleSelectionChange"
-      style="width: 100%"
-    >
-      <el-table-column type="selection" width="50" align="center" />
+    <el-table :data="posts" v-loading="loading" border style="width: 100%">
       <el-table-column prop="fileName" label="文件名" min-width="240" show-overflow-tooltip />
       <el-table-column prop="version" label="版本" width="80" align="center" />
-      <el-table-column label="分类" width="140" align="center">
+      <el-table-column label="分类" width="170" align="center">
         <template slot-scope="scope">
           <el-tag size="small" effect="plain">{{ scope.row.category }}</el-tag>
         </template>
@@ -79,30 +63,21 @@
           {{ formatSize(scope.row.fileSize) }}
         </template>
       </el-table-column>
-      <el-table-column label="状态" width="90" align="center">
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.status === '0' ? 'success' : 'info'" size="small">
-            {{ scope.row.status === '0' ? '正常' : '停用' }}
-          </el-tag>
-        </template>
-      </el-table-column>
       <el-table-column label="最近同步" width="170" align="center">
         <template slot-scope="scope">
           {{ formatTime(scope.row.lastSyncTime) }}
         </template>
       </el-table-column>
-      <el-table-column label="云存储URL" min-width="240" show-overflow-tooltip>
+      <el-table-column label="云存储URL" min-width="170" show-overflow-tooltip>
         <template slot-scope="scope">
           <span style="color: #909399; font-size: 12px">{{ scope.row.fileUrl }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="260" align="center" fixed="right">
+      <el-table-column label="操作" width="220" align="center" fixed="right">
         <template slot-scope="scope">
           <el-button type="text" size="small" icon="el-icon-view" @click="handlePreview(scope.row)">预览</el-button>
           <el-button type="text" size="small" icon="el-icon-link" @click="openUrl(scope.row)">打开</el-button>
           <el-button type="text" size="small" icon="el-icon-link" @click="copyUrl(scope.row)">复制链接</el-button>
-          <el-button type="text" size="small" icon="el-icon-edit" @click="handleEdit(scope.row)">编辑</el-button>
-          <el-button type="text" size="small" icon="el-icon-delete" class="danger-btn" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -122,37 +97,8 @@
       />
     </div>
 
-    <!-- 编辑弹窗 -->
-    <el-dialog :visible.sync="editVisible" title="编辑博客" width="520px" append-to-body>
-      <el-form :model="editForm" label-width="90px">
-        <el-form-item label="标题">
-          <el-input v-model="editForm.title" placeholder="请输入标题" />
-        </el-form-item>
-        <el-form-item label="分类">
-          <el-input :value="editForm.category" disabled />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="editForm.status">
-            <el-radio label="0">正常</el-radio>
-            <el-radio label="1">停用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <div slot="footer">
-        <el-button @click="editVisible = false">取消</el-button>
-        <el-button type="primary" :loading="editLoading" @click="submitEdit">确定</el-button>
-      </div>
-    </el-dialog>
-
     <!-- 预览弹窗 -->
-    <el-dialog
-      :visible.sync="previewVisible"
-      :title="previewTitle"
-      width="88%"
-      top="4vh"
-      append-to-body
-      custom-class="preview-dialog"
-    >
+    <el-dialog :visible.sync="previewVisible" :title="previewTitle" width="88%" top="4vh" append-to-body custom-class="preview-dialog">
       <div class="preview-container" v-loading="previewLoading">
         <div v-if="markdownContent" ref="previewContent" class="markdown-preview" v-html="markdownContent"></div>
         <div v-else class="preview-empty">
@@ -189,16 +135,7 @@
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
-import {
-  listBlogPosts,
-  listBlogCategories,
-  updateBlogPost,
-  deleteBlogPost,
-  deleteBlogPosts,
-  syncBlogPosts,
-  getBlogSyncStatus,
-  previewBlogPost
-} from '@/api/bed/blog'
+import { listBlogPosts, listBlogCategories, syncBlogPosts, getBlogSyncStatus, previewBlogPost } from '@/api/bed/blog'
 
 export default {
   name: 'BlogPost',
@@ -208,21 +145,12 @@ export default {
         keyword: '',
         category: '',
         page: 1,
-        limit: 20
+        limit: 20,
       },
       posts: [],
       categories: [],
       total: 0,
       loading: false,
-      selectedIds: [],
-      editVisible: false,
-      editLoading: false,
-      editForm: {
-        id: null,
-        title: '',
-        category: '',
-        status: '0'
-      },
       previewVisible: false,
       previewLoading: false,
       previewTitle: '',
@@ -239,10 +167,10 @@ export default {
         updated: 0,
         skipped: 0,
         failed: 0,
-        stage: ''
+        stage: '',
       },
       syncPolling: false,
-      syncPollTimer: null
+      syncPollTimer: null,
     }
   },
   created() {
@@ -257,8 +185,8 @@ export default {
     syncPercent() {
       const total = this.syncProgress.total
       if (!total) return 0
-      return Math.min(100, Math.round(this.syncProgress.processed / total * 100))
-    }
+      return Math.min(100, Math.round((this.syncProgress.processed / total) * 100))
+    },
   },
   methods: {
     handleSearch() {
@@ -292,9 +220,6 @@ export default {
         console.error('加载分类失败:', error)
       }
     },
-    handleSelectionChange(selection) {
-      this.selectedIds = selection.map(item => item.id)
-    },
     handlePageChange(page) {
       this.searchParams.page = page
       this.loadPosts()
@@ -303,73 +228,6 @@ export default {
       this.searchParams.limit = limit
       this.searchParams.page = 1
       this.loadPosts()
-    },
-    handleEdit(row) {
-      this.editForm = {
-        id: row.id,
-        title: row.title,
-        category: row.category,
-        status: row.status || '0'
-      }
-      this.editVisible = true
-    },
-    async submitEdit() {
-      if (!this.editForm.title) {
-        this.$message.warning('请输入标题')
-        return
-      }
-      this.editLoading = true
-      try {
-        const res = await updateBlogPost(this.editForm.id, this.editForm.title, this.editForm.status)
-        if (res.code === 200) {
-          this.$message.success('更新成功')
-          this.editVisible = false
-          this.loadPosts()
-        } else {
-          this.$message.error(res.msg || '更新失败')
-        }
-      } catch (error) {
-        console.error('更新博客失败:', error)
-        this.$message.error('更新博客失败')
-      } finally {
-        this.editLoading = false
-      }
-    },
-    async handleDelete(row) {
-      try {
-        await this.$confirm('确定要删除该博客吗？', '提示', { type: 'warning' })
-        const res = await deleteBlogPost(row.id)
-        if (res.code === 200) {
-          this.$message.success('删除成功')
-          this.loadPosts()
-        } else {
-          this.$message.error(res.msg || '删除失败')
-        }
-      } catch (error) {
-        if (error !== 'cancel') {
-          console.error('删除博客失败:', error)
-          this.$message.error('删除博客失败')
-        }
-      }
-    },
-    async handleBatchDelete() {
-      try {
-        await this.$confirm(`确定要删除选中的 ${this.selectedIds.length} 篇博客吗？`, '提示', {
-          type: 'warning'
-        })
-        const res = await deleteBlogPosts(this.selectedIds)
-        if (res.code === 200) {
-          this.$message.success('删除成功')
-          this.loadPosts()
-        } else {
-          this.$message.error(res.msg || '删除失败')
-        }
-      } catch (error) {
-        if (error !== 'cancel') {
-          console.error('批量删除博客失败:', error)
-          this.$message.error('批量删除博客失败')
-        }
-      }
     },
     async handleSync() {
       if (this.syncRunning) {
@@ -385,7 +243,7 @@ export default {
         updated: 0,
         skipped: 0,
         failed: 0,
-        stage: ''
+        stage: '',
       }
       try {
         const res = await syncBlogPosts()
@@ -428,7 +286,7 @@ export default {
           updated: res.data.updated || 0,
           skipped: res.data.skipped || 0,
           failed: res.data.failed || 0,
-          stage: res.data.stage || ''
+          stage: res.data.stage || '',
         }
         if (!this.syncRunning && this.syncPolling) {
           this.stopSyncPolling()
@@ -455,7 +313,7 @@ export default {
         if (res.code === 200) {
           this.markdownContent = marked.parse(res.data.content || '', {
             gfm: true,
-            breaks: true
+            breaks: true,
           })
           this.$nextTick(() => {
             this.highlightCode()
@@ -472,7 +330,7 @@ export default {
     },
     highlightCode() {
       if (!this.$refs.previewContent) return
-      this.$refs.previewContent.querySelectorAll('pre code').forEach(block => {
+      this.$refs.previewContent.querySelectorAll('pre code').forEach((block) => {
         hljs.highlightBlock(block)
       })
     },
@@ -527,8 +385,8 @@ export default {
       const minutes = String(date.getMinutes()).padStart(2, '0')
       const seconds = String(date.getSeconds()).padStart(2, '0')
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -564,22 +422,9 @@ export default {
   font-size: 14px;
 }
 
-.selected-info {
-  margin-left: 16px;
-  color: #409eff;
-}
-
 .post-title {
   display: flex;
   align-items: center;
-}
-
-.danger-btn {
-  color: #f56c6c;
-}
-
-.danger-btn:hover {
-  color: #f78989;
 }
 
 .pagination {
