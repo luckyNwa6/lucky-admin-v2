@@ -76,7 +76,11 @@
           <dict-tag :options="dict.type.llm_type" :value="scope.row.modelType" />
         </template>
       </el-table-column>
-      <el-table-column label="平台" prop="platform" width="100" />
+      <el-table-column label="平台" width="100">
+        <template slot-scope="scope">
+          {{ scope.row.platformName || platformFormatter(scope.row) }}
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" width="70">
         <template slot-scope="scope">
           <el-switch
@@ -150,22 +154,22 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="平台" prop="platform">
-                <el-select v-model="form.platform" placeholder="请选择平台">
-                  <el-option v-for="item in platformOptions" :key="item.code" :label="item.name" :value="item.code" />
+              <el-form-item label="API 密钥" prop="apiKeyId">
+                <el-select v-model="form.apiKeyId" placeholder="请选择 API 密钥" filterable @change="handleApiKeyChange">
+                  <el-option-group v-for="group in apiKeyGroups" :key="group.code" :label="group.name">
+                    <el-option v-for="item in group.keys" :key="item.id" :label="item.name" :value="item.id" />
+                  </el-option-group>
                 </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="绑定平台">
+                <el-input :value="selectedPlatformName" placeholder="选择 API 密钥后自动带出" disabled />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="模型ID" prop="modelId">
                 <el-input v-model="form.modelId" placeholder="请输入模型ID" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="API 密钥" prop="apiKeyId">
-                <el-select v-model="form.apiKeyId" placeholder="请选择 API 密钥" filterable>
-                  <el-option v-for="item in apiKeyOptions" :key="item.id" :label="item.name" :value="item.id" />
-                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -321,7 +325,7 @@ export default {
       form: {},
       rules: {
         name: [{ required: true, message: '配置名称不能为空', trigger: 'blur' }],
-        platform: [{ required: true, message: '平台不能为空', trigger: 'change' }],
+        apiKeyId: [{ required: true, message: 'API 密钥不能为空', trigger: 'change' }],
         modelId: [{ required: true, message: '模型ID不能为空', trigger: 'blur' }]
       }
     }
@@ -329,6 +333,39 @@ export default {
   created() {
     this.getList()
     this.loadOptions()
+  },
+  computed: {
+    apiKeyGroups() {
+      const groups = []
+      const byPlatform = {}
+      const indexedOptions = (this.platformOptions || []).map((item, index) => ({ ...item, index }))
+      const keys = (this.apiKeyOptions || []).slice()
+      keys.forEach((key) => {
+        const code = key.platform || ''
+        if (!byPlatform[code]) {
+          const name = this.platformCodeFormatter(code)
+          const matched = indexedOptions.find(item => item.code === code)
+          byPlatform[code] = {
+            code,
+            name,
+            index: matched ? matched.index : Number.MAX_SAFE_INTEGER,
+            keys: []
+          }
+        }
+        byPlatform[code].keys.push(key)
+      })
+      groups.push(...Object.values(byPlatform))
+      groups.sort((a, b) => a.index - b.index)
+      return groups
+    },
+    selectedPlatformName() {
+      if (!this.form.apiKeyId) {
+        return this.platformCodeFormatter(this.form.platform)
+      }
+      const key = (this.apiKeyOptions || []).find(item => item.id === this.form.apiKeyId)
+      const code = key ? key.platform : this.form.platform
+      return this.platformCodeFormatter(code)
+    }
   },
   methods: {
     getList() {
@@ -349,6 +386,9 @@ export default {
       })
       listApiKey({ pageNum: 1, pageSize: 100 }).then((res) => {
         this.apiKeyOptions = res.rows || []
+        if (this.form.apiKeyId) {
+          this.syncPlatformFromApiKey()
+        }
       })
       listRole({ pageNum: 1, pageSize: 100 }).then((res) => {
         this.roleOptions = res.rows || []
@@ -367,6 +407,24 @@ export default {
         .catch(() => {
           row.status = row.status === 'active' ? 'disabled' : 'active'
         })
+    },
+    platformFormatter(row) {
+      const code = row.platform
+      const option = this.platformOptions.find(item => item.code === code)
+      return option ? option.name : code
+    },
+    handleApiKeyChange() {
+      this.syncPlatformFromApiKey()
+    },
+    syncPlatformFromApiKey() {
+      const key = (this.apiKeyOptions || []).find(item => item.id === this.form.apiKeyId)
+      if (key) {
+        this.form.platform = key.platform
+      }
+    },
+    platformCodeFormatter(code) {
+      const option = this.platformOptions.find(item => item.code === code)
+      return option ? option.name : code
     },
     handleQuery() {
       this.queryParams.pageNum = 1
@@ -413,6 +471,7 @@ export default {
         }
         this.quotaUnlimited = this.form.quotaTotal === null || this.form.quotaTotal === undefined
         this.syncTokenRemaining()
+        this.syncPlatformFromApiKey()
         this.open = true
         this.title = '修改模型配置'
       })
@@ -584,7 +643,8 @@ export default {
 }
 
 .model-config-form .el-form-item__content .el-select,
-.model-config-form .el-form-item__content .el-radio-group {
+.model-config-form .el-form-item__content .el-radio-group,
+.model-config-form .el-form-item__content .el-input {
   width: 100%;
 }
 

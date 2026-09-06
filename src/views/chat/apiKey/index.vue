@@ -65,7 +65,11 @@
     <el-table v-loading="loading" :data="list" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="名称" prop="name" min-width="130" :show-overflow-tooltip="true" />
-      <el-table-column label="平台" prop="platform" width="110" />
+      <el-table-column label="平台" width="110">
+        <template slot-scope="scope">
+          {{ scope.row.platformName || platformFormatter(scope.row) }}
+        </template>
+      </el-table-column>
       <el-table-column label="API 密钥" min-width="110" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span class="api-key-text">{{ scope.row.apiKey }}</span>
@@ -163,8 +167,8 @@ export default {
       rules: {
         name: [{ required: true, message: '密钥名称不能为空', trigger: 'blur' }],
         platform: [{ required: true, message: '平台不能为空', trigger: 'change' }],
-        apiKey: [{ required: true, message: 'API 密钥不能为空', trigger: 'blur' }],
-      },
+        apiKey: [{ required: true, message: 'API 密钥不能为空', trigger: 'blur' }]
+      }
     }
   },
   created() {
@@ -189,6 +193,11 @@ export default {
     handleQuery() {
       this.queryParams.pageNum = 1
       this.getList()
+    },
+    platformFormatter(row) {
+      const code = row.platform
+      const option = this.platformOptions.find(item => item.code === code)
+      return option ? option.name : code
     },
     resetQuery() {
       this.resetForm('queryForm')
@@ -252,8 +261,8 @@ export default {
     cancel() {
       this.open = false
       this.reset()
-    },
-  },
+    }
+  }
 }
 </script>
 
